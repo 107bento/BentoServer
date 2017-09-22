@@ -1,9 +1,17 @@
 const express = require('express');
 const bodyParser = require('body-parser'); // req.body transfer to json
 const cors = require('cors');
-const loginRoute = require('./login.js');
-const usersRoute = require('./users.js');
-const shopsRoute = require('./shops.js');
+const loginRouter = require('./loginRouter.js');
+const usersRouter = require('./usersRouter.js');
+const shopsRouter = require('./shopsRouter.js');
+const mysql = require('mysql');
+// 跟 DB 建立連線
+connection = mysql.createConnection({
+    host     : 'localhost',
+    user     : 'root',
+    password : '',
+    database : 'bento107'
+});
 
 /**
  * Global variables
