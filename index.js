@@ -38,11 +38,11 @@ app.use(cors({
  * Routes
  */
 
-app.use('/login', loginRoute);
+app.use('/login', loginRouter);
 
-app.use('/users', usersRoute);
+app.use('/users', usersRouter);
 
-app.use('/shops', shopsRoute);
+app.use('/shops', shopsRouter);
 
 app.get('/', function (req, res, next) {
 	res.send('Hello world.');
