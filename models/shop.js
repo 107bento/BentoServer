@@ -10,7 +10,7 @@ function showShop (callback) {
         /*data = {
 
         }*/
-        callback(undefined, { "ending" : "店家顯示ok" } );
+        callback(undefined, results);
         return;
     });
 }
