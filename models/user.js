@@ -77,3 +77,19 @@ function showUser (username, callback) {
         return;
     });
 }
+function checkLogin(reqCookie) {
+    let uuid = reqCookie.BENTOSESSIONID;
+    if (_cookies[uuid]) {
+        return _cookies[uuid];
+    } else {
+        return false;
+    }
+}
+
+module.exports = {
+    validate,
+    register,
+    modify,
+    showUser,
+    checkLogin
+};
