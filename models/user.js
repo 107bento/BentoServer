@@ -36,7 +36,7 @@ function register (username, password, name, phone, email, callback) {
     }
 
     // sql指令 -> 增加新使用者
-    let sql = `INSERT INTO users (user_id , password , phone , email , money , name) VALUES ( '${username}' , '${password}' ,'298445637','ughoji',50,'李悅');`;  
+    let sql = `INSERT INTO users (user_id , password , phone , email , money , name) VALUES ( '${username}' , '${password}' ,'${phone}','${email}', 0, '${name}');`;  
     connection.query(sql, (err, results) => {
         if (err) {
             throw err;
