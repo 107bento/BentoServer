@@ -6,8 +6,8 @@ const shop = require('./models/shop');
 // 取店家資料（所有相關（含菜單））
 shopsRouter.get('/', (req, res) => {
 
-    shop.showshop((error, results) => {
-
+    shop.showShop((error, results) => {
+        
         if (typeof(results) !== undefined && typeof(error) == "undefined") {
             return res.status(200).json(results);
         } else {

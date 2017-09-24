@@ -1,9 +1,7 @@
-function showshop (callback) { // 店家資料（＆菜單）
+// 店家 & 菜單
+function showShop (callback) {
     // sql指令 -> 所有shop data
-    let sql = `select shops.shop_id,shop_name,lowest_amount,highest_amount,shipping_fee,shop_discount,meals.meal_id,meal_name,meal_price,meal_discount
-    from shops, meals
-    where shops.shop_id = meals.shop_id
-    Group by  meals.meal_id;`;  
+    let sql = `select shops.shop_id,shop_name,lowest_amount,highest_amount,shipping_fee,shop_discount,meals.meal_id,meal_name,meal_price,meal_discount from shops, meals where shops.shop_id = meals.shop_id Group by meals.meal_id;`;  
     connection.query(sql, (err, results) => {
         if (err) {
             throw err;
@@ -16,5 +14,7 @@ function showshop (callback) { // 店家資料（＆菜單）
         return;
     });
 }
-//module.exports = {showshop};
-module.exports.showshop = showshop;
+
+module.exports = {
+    showShop
+};
