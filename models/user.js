@@ -41,7 +41,7 @@ function register (username, password, name, phone, email, callback) {
         if (err) {
             throw err;
         }
-        callback(undefined, { "ending" : "註冊成功" } );
+        callback(undefined, { "success" : "register successfully." } );
         return;
     });
 }
@@ -55,7 +55,7 @@ function modify (username, password, phone, email, name, callback) {
         if (err) {
             throw err;
         }
-        callback(undefined, { "ending" : "修改成功" } );
+        callback(undefined, { "success" : "edit successfully." } );
         return;
     });
 }
@@ -73,7 +73,7 @@ function showUser (username, callback) {
         /*data = {
 
         }*/
-        callback(undefined, { "ending" : "個資取得^^" } );
+        callback(undefined, results);
         return;
     });
 }
