@@ -10,8 +10,11 @@
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.18.1",
+    "cookie-parser": "^1.4.3",
     "cors": "^2.8.4",
     "express": "^4.15.4",
+    "md5": "^2.2.1",
+    "moment": "^2.18.1",
     "mysql": "^2.14.1"
   }
 }
