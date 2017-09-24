@@ -19,6 +19,9 @@ connection = mysql.createConnection({
  * Global variables
  */
 
+// 存在 client 端的 cookie name
+cookieName = 'BENTOSESSIONID';
+_cookies = {};
 
 // new a express
 const app = express();
