@@ -21,7 +21,9 @@ function validate (username, password, callback) { // 登入驗證
     // console.log(sql);
     connection.query(sql, (err, results, fields) => {
         if (err) {
-            throw err;
+            throw err; 
+
+            
         }
         if (results.length <= 0) {
             let error = 'username or password is wrong.'
@@ -59,3 +61,36 @@ function register (username, password, callback) { // 註冊
 }
 //module.exports = {register};
 module.exports.register = register;
+
+function modify (username, password, phone, email, name, callback) { // 修改個資
+    // sql指令 -> update 使用者資訊
+    let sql = `update users set email = '${email}',password = '${password}',user_id = '${username}',name = '${name}',phone = '${phone}'
+               where user_id = '${username}';`;  
+    connection.query(sql, (err, results) => {
+        if (err) {
+            throw err;
+        }
+        callback(undefined, { "ending" : "修改成功" } );
+        return;
+    });
+}
+//module.exports = {modify};
+module.exports.modify = modify;
+
+function showuser (username, callback) { // 個人資料
+    // sql指令 -> 所有user data
+    let sql = `select * from users where user_id = '${username}';`; 
+    connection.query(sql, (err, results) => {
+        if (err) {
+            throw err;
+        }
+        console.log(results);
+        /*data = {
+
+        }*/
+        callback(undefined, { "ending" : "個資取得^^" } );
+        return;
+    });
+}
+//module.exports = {showshop};
+module.exports.showuser = showuser;
