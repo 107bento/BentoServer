@@ -5,6 +5,8 @@ const loginRouter = require('./loginRouter.js');
 const usersRouter = require('./usersRouter.js');
 const shopsRouter = require('./shopsRouter.js');
 const mysql = require('mysql');
+const cookieParser = require('cookie-parser');
+
 // 跟 DB 建立連線
 connection = mysql.createConnection({
     host     : 'localhost',
@@ -26,6 +28,7 @@ const app = express();
  */
 
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 // cross domain access
 app.use(cors({
@@ -33,7 +36,7 @@ app.use(cors({
 	credentials: true,
 	origin: true
 }));
- 
+
 /**
  * Routes
  */
