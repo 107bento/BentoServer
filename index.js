@@ -4,6 +4,7 @@ const cors = require('cors');
 const loginRouter = require('./loginRouter.js');
 const usersRouter = require('./usersRouter.js');
 const shopsRouter = require('./shopsRouter.js');
+const ordersRouter = require('./ordersRouter.js');
 const mysql = require('mysql');
 const cookieParser = require('cookie-parser');
 
@@ -46,7 +47,7 @@ app.use(cors({
 
 app.use('/login', loginRouter);
 
-app.use('/users', usersRouter);
+app.use('/user', usersRouter);
 
 app.use('/shops', shopsRouter);
 

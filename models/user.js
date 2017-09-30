@@ -29,7 +29,7 @@ function validate (username, password, callback) {
 function register (username, password, name, phone, email, callback) { 
     
     // 帳密字串型態
-    if (typeof(username) !== 'string' || typeof(password) !== 'string') { 
+    if (typeof(username) !== 'string' || typeof(password) !== 'string' || typeof(name) !== 'string' || typeof(phone) !== 'string' || typeof(email) !== 'string') { 
         let error='username and password must be string.';
         callback(error, undefined);
         return;
