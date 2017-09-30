@@ -47,7 +47,7 @@ app.use(cors({
 
 app.use('/login', loginRouter);
 
-app.use('/users', usersRouter);
+app.use('/user', usersRouter);
 
 app.use('/shops', shopsRouter);
 
