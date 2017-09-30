@@ -4,6 +4,7 @@ const cors = require('cors');
 const loginRouter = require('./loginRouter.js');
 const usersRouter = require('./usersRouter.js');
 const shopsRouter = require('./shopsRouter.js');
+const ordersRouter = require('./ordersRouter.js');
 const mysql = require('mysql');
 const cookieParser = require('cookie-parser');
 
@@ -49,6 +50,8 @@ app.use('/login', loginRouter);
 app.use('/users', usersRouter);
 
 app.use('/shops', shopsRouter);
+
+app.use('/orders', ordersRouter);
 
 app.get('/', function (req, res, next) {
 	res.send('Hello world.');
