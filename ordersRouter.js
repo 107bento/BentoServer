@@ -6,8 +6,13 @@ const order = require('./models/order.js');
 const md5 = require('md5'); 
  
 ordersRouter.post('/', (req, res) => { 
-     
-    let username = user.checkLogin(req.cookies); 
+      
+    let username = user.checkLogin(req.cookies);
+    if (!username) {
+        return res.status(401).json({
+            error: 'please login!'
+        });
+    }
     let orderTime = moment().format('YYYY/MM/DD HH:mm:ss'); 
     let total = req.body.total; 
     let details = req.body.details; 
