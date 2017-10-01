@@ -6,7 +6,6 @@ function showShop (callback) {
         if (err) {
             throw err;
         }
-        console.log(results);
         /*data = {
 
         }*/

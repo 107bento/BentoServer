@@ -69,7 +69,7 @@ function showUser (username, callback) {
         if (err) {
             throw err;
         }
-        console.log(results);
+        //console.log(results);
         /*data = {
 
         }*/
