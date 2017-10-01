@@ -26,7 +26,7 @@ usersRouter.get('/', function (req, res) {
 usersRouter.patch('/', function (req, res) {
     let username = user.checkLogin(req.cookies);
     if (!username) {
-        console.log(_cookie);
+        //console.log(_cookie);
         return res.status(401).json({
             error: 'please login!'
         });
@@ -59,7 +59,6 @@ usersRouter.post('/', (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
     const name = req.body.name;
-    console.log(name);
     const phone = req.body.phone;
     const email = req.body.email;
 
