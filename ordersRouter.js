@@ -38,7 +38,7 @@ ordersRouter.post('/', (req, res) => {
                 message: 'order successfully.' 
             }); 
         } else { 
-            return res.status(401).json({ 
+            return res.status(400).json({ 
                 error: error 
             }); 
         } 

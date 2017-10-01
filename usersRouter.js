@@ -15,7 +15,7 @@ usersRouter.get('/', function (req, res) {
         if (typeof(results) !== undefined && typeof(error) == "undefined") {
             return res.status(200).json(results);
         } else {
-            return res.status(401).json({
+            return res.status(400).json({
                 error: error
             });
         }
@@ -46,7 +46,7 @@ usersRouter.patch('/', function (req, res) {
             if (typeof(results) !== undefined && typeof(error) == "undefined") {
                 return res.status(200).json(results);
             } else {
-                return res.status(401).json({
+                return res.status(400).json({
                        error: error
                 });
             }
@@ -74,7 +74,7 @@ usersRouter.post('/', (req, res) => {
         if (typeof(results) !== undefined && typeof(error) == "undefined") {
             return res.status(200).json(results);
         } else {
-            return res.status(401).json({
+            return res.status(400).json({
                 error: error
             });
         }

@@ -11,7 +11,7 @@ shopsRouter.get('/', (req, res) => {
         if (typeof(results) !== undefined && typeof(error) == "undefined") {
             return res.status(200).json(results);
         } else {
-            return res.status(401).json({
+            return res.status(400).json({
                 error: error
             });
         }

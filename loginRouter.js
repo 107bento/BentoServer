@@ -24,7 +24,7 @@ loginRouter.post('/', (req, res) => {
             res.cookie(cookieName, uuid);
             return res.status(200).json(results);
         } else {
-            return res.status(401).json({
+            return res.status(400).json({
                 error: error
             });
         }
