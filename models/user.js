@@ -39,7 +39,8 @@ function register (username, password, name, phone, email, callback) {
     let sql = `INSERT INTO users (user_id , password , phone , email , money , name) VALUES ( '${username}' , '${password}' ,'${phone}','${email}', 0, '${name}');`;  
     connection.query(sql, (err, results) => {
         if (err) {
-            throw err;
+            callback({error: 'username has been existed.'}, undefined);
+            return;
         }
         callback(undefined, { "success" : "register successfully." } );
         return;
