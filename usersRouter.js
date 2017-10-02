@@ -64,7 +64,7 @@ usersRouter.post('/', (req, res) => {
 
     if (!username || !password || !name || !phone || !email) {
         return res.status(400).json({
-            error: ' username or password ??'
+            error: 'data incomplete.'
         });
     }
 
