@@ -1,5 +1,6 @@
 const order = require('./models/order.js'); 
 const mysql = require('mysql');
+moment = require('moment');
 
 connection = mysql.createConnection({
     host     : 'localhost',
@@ -7,11 +8,4 @@ connection = mysql.createConnection({
     password : '',
     database : 'bento107'
 });
-order.sortOrder((error, results) => {
-    
-    if (typeof(results) !== undefined && typeof(error) == "undefined") {
-        console.log(results);
-    } else {
-        console.log( "error" );
-    }
-});
+order.sortOrder();
