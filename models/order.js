@@ -24,65 +24,48 @@ function newOrder (username, orderTime, total, details, callback) {
     });
 }
 
-function sortOrder (callback){ // 排單演算法
-    // 先取當天日期 MyDateString
-    var MyDate = new Date();
-    var MyDateString;
-    MyDate.setDate(MyDate.getDate());
-    MyDateString = MyDate.getFullYear() + '/' + ('0' + (MyDate.getMonth()+1)).slice(-2) + '/' + ('0' + MyDate.getDate()).slice(-2);
-    // console.log(MyDateString);
-    // sql 取出當天 order_id 和 detail
-    let sql = "select * from details where order_id IN("
-         + "select order_id from orders where order_time = '" + MyDateString + "');";
-    /* 創一個 shop 的 json {}
-       shop - meal - num
-    */
-    let shops = {};
+// 排單演算法
+function sortOrder() { 
+    // 建立今天的日期
+    const date = moment().format('YYYY-MM-DD');
+    // 搜尋所有當日的訂單
+    const sql = 'select details.*, meals.shop_id, shops.shop_name from details inner join meals,shops where order_id IN(select order_id from orders where order_time = "' + date + '")and details.meal_id = meals.meal_id and meals.shop_id = shops.shop_id;';
+
+    // 計算有哪些店家
     connection.query(sql, (err, results) => {
         if (err) {
             throw err;
         }
+        // 清空所有店家
+        let shops = {};
+        // 看每一筆訂單資料
         for (let result of results ) {
-            amount = result.amount;
-            let shop_id;
-            _belongShop(1, (error, result) =>{
-                shop_id = result;
-                if(shops[shop_id] == null) {
-                    // shop 未存在,增加店家
-                    shops[shop_id] = {
-                        "shop_id": shop_id,
-                        "shop_name": result.shop_name
-                    };
-                }
-                shops[shop_id].meals =  typeof shops[shop_id].meals === 'object' ? shops[shop_id].meals : {} ;
-                if(shops[shop_id].meals[result.meal_id] == null) {
-                    // meal 未存在,增加 meal
-                    shops[shop_id].meals[result.meal_id] = {
-                        "meal_id": result.meal_id,
-                        "meal_name": result.meal_name,
-                        "meal_amount": amount
-                    };
-                } else {
-                    amount = amount + shops[shop_id].meals[meal_id].meal_amount;
-                    shops[shop_id].meals[meal_id].meal_amount =  amount;
-                }
-            });
-            
+            // 先把餐點數量存起來
+            let amount = result.amount;
+
+            let shop_id = result.shop_id;
+            // 若 shop 未存在 => 增加店家
+            if(shops[shop_id] == null) {
+                shops[shop_id] = {
+                    "shop_name": result.shop_name,
+                    "meals": {}
+                };
+            }
+
+            let mealId = result.meal_id;
+            // 若點家的 meal 不存在 => 新增餐點，並把數量存進去
+            if(shops[shop_id].meals[mealId] == null) {
+                shops[shop_id].meals[mealId] = amount;
+            } else {
+                // 已經存在就累加
+                amount += result.meal_amount;
+                shops[shop_id].meals[mealId] = amount;
+            }
         }
-        callback(undefined, shops);
-        return;
+        console.log(shops);
     });
 }
-function _belongShop(meal_id,callback) { // 從 mealid 找到店家 shopid
-    let sql = "select shop_id from meals where meal_id = " + meal_id + ";" ;
-    connection.query(sql, (err, results) => {
-        if (err) {
-            throw err;
-        }
-        callback(undefined, results[0].shop_id);
-        return;
-    }); 
-}
+
 module.exports = {
     newOrder,
     sortOrder
