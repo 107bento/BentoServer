@@ -76,6 +76,7 @@ function sortOrder() {
                 }
             }
             
+            
         }
         console.log(orderedShops['1'].meals['2']);
         // 
@@ -84,5 +85,6 @@ function sortOrder() {
 
 module.exports = {
     newOrder,
-    sortOrder
+    sortOrder,
+    _belongShop
 };
