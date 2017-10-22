@@ -29,7 +29,7 @@ function sortOrder() {
     // 建立今天的日期
     const date = moment().format('YYYY-MM-DD');
     // 搜尋所有當日的訂單
-    const sql = 'select details.*, meals.shop_id, shops.shop_name from details inner join meals,shops where order_id IN(select order_id from orders where order_time = "' + date + '")and details.meal_id = meals.meal_id and meals.shop_id = shops.shop_id;';
+    const sql = 'select details.*, meals.shop_id, shops.* from details inner join meals,shops where order_id IN(select order_id from orders where order_time = "' + date + '")and details.meal_id = meals.meal_id and meals.shop_id = shops.shop_id;';
 
     // 計算有哪些店家
     connection.query(sql, (err, results) => {
@@ -37,7 +37,7 @@ function sortOrder() {
             throw err;
         }
         // 清空所有店家
-        let shops = {};
+        let orderedShops = {};
         // 看每一筆訂單資料
         for (let result of results ) {
             // 先把餐點數量存起來
@@ -45,24 +45,40 @@ function sortOrder() {
 
             let shop_id = result.shop_id;
             // 若 shop 未存在 => 增加店家
-            if(shops[shop_id] == null) {
-                shops[shop_id] = {
+            if(orderedShops[shop_id] == null) {
+                orderedShops[shop_id] = {
                     "shop_name": result.shop_name,
+                    "total_amount": 0,
+                    "lowest_amount": result.lowest_amount,
+                    "highest_amount": result.highest_amount,
                     "meals": {}
                 };
             }
 
             let mealId = result.meal_id;
             // 若點家的 meal 不存在 => 新增餐點，並把數量存進去
-            if(shops[shop_id].meals[mealId] == null) {
-                shops[shop_id].meals[mealId] = amount;
+            if(orderedShops[shop_id].meals[mealId] == null) {
+                if (amount <= orderedShops[shop_id].highest_amount) {
+                    orderedShops[shop_id].meals[mealId] = {
+                        amount,
+                        "details": [result.detail_id]
+                    };
+                    orderedShops[shop_id].total_amount += amount;
+                }
             } else {
-                // 已經存在就累加
                 amount += result.meal_amount;
-                shops[shop_id].meals[mealId] = amount;
+                // 已經存在就累加
+                if (amount <= orderedShops[shop_id].highest_amount) {
+                    
+                    orderedShops[shop_id].meals[mealId].amount = amount;
+                    orderedShops[shop_id].meals[mealId].details.push(result.detail_id);
+                    orderedShops[shop_id].total_amount += amount;
+                }
             }
+            
         }
-        console.log(shops);
+        console.log(orderedShops['1'].meals['2']);
+        // 
     });
 }
 
