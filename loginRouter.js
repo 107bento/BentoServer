@@ -11,7 +11,8 @@ loginRouter.post('/', (req, res) => {
 
     if (!username || !password) {
         return res.status(400).json({
-            error: 'lost username or password.'
+            error: 'lost username or password.',
+            "status_code" : 400
         });
     }
 
@@ -22,10 +23,11 @@ loginRouter.post('/', (req, res) => {
             //
             _cookies[uuid] = results.user_id;
             res.cookie(cookieName, uuid);
-            return res.status(200).json(results);
+            return res.status(200).json({"user_id": results.user_id,"status_code" : 200});
         } else {
             return res.status(400).json({
-                error: error
+                error: error,
+                "status_code" : 400
             });
         }
     });
