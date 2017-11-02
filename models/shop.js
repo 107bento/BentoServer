@@ -1,4 +1,4 @@
-// 店家 & 菜單
+// 全部店家 & 菜單
 function showShop (callback) {
     // sql指令 -> 所有shop data
     let sql = `select shops.shop_id,shop_name,lowest_amount,highest_amount,shipping_fee,shop_discount,meals.meal_id,meal_name,meal_price,meal_discount from shops, meals where shops.shop_id = meals.shop_id Group by meals.meal_id;`;  
@@ -40,8 +40,62 @@ function showShop (callback) {
     });
 }
 
+// 只拿到店家
+function onlyshowShop (callback) {
+    // sql指令 -> 所有shop data
+    let sql = `select shops.shop_id,shop_name,lowest_amount,highest_amount,shipping_fee,shop_discount from shops Group by shop_id;`;  
+    connection.query(sql, (err, results) => {
+        let shops = {};
+        if (err) {
+            throw err;
+        }
+
+        //hash 
+        for(let result of results) { // 讀每一筆 sql 查詢出來的資料
+            if(shops[result.shop_id] == null) {
+                // shop 未存在,增加店家
+                shops[result.shop_id] = {
+                    "shop_id": result.shop_id,
+                    "shop_name": result.shop_name,
+                    "lowest_amount": result.lowest_amount,
+                    "highest_amount": result.highest_amount,
+                    "shipping_fee": result.shipping_fee,
+                    "shop_discount": result.shop_discount
+                };
+            }    
+        }
+        callback(undefined, shops);
+        return;
+    });
+}
+
+// 拿到店家 id 對應的 Meal
+function onlyshowMeal (shop_id,callback) {
+    // sql指令 -> 所有shop data
+    let sql = `select meals.meal_id,meal_name,meal_price,meal_discount from meals where meals.shop_id =` + shop_id +` Group by meals.meal_id;`;   
+    connection.query(sql, (err, results) => {
+        let meals = {};
+        if (err) {
+            throw err;
+        }
+
+        //hash 
+        for(let result of results) { // 讀每一筆 sql 查詢出來的資料
+            meals[result.meal_id] = {
+                "meal_id": result.meal_id,
+                "meal_name": result.meal_name,
+                "meal_price": result.meal_price,
+                "meal_discount": result.meal_discount
+            };  
+        }
+        callback(undefined, meals);
+        return;
+    });
+}
 module.exports = {
-    showShop
+    showShop,
+    onlyshowShop,
+    onlyshowMeal
 };
 
 
