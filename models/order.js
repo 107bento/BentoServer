@@ -112,6 +112,40 @@ function sortOrder() {
         }
         // console.log(orderedShops['1'].meals['2']);
         // 
+// 拿到所有店家，並初始變數的值
+function _getShops() {
+    return new Promise((resolve, reject) => {
+        const sql = 'select meal_id, shops.* from meals, shops where meals.shop_id = shops.shop_id;';
+        connection.query(sql, (err, results) => {
+            if (err) {
+                reject(err);
+            }
+            let shops = [];
+            for (let result of results) {
+                let shop_id = result.shop_id;
+                if (shops[shop_id] != null) {
+                    shops[shop_id].meals.push(result.meal_id);
+                } else {
+                    let shop_name = result.shop_name;
+                    let lowest_amount = result.lowest_amount;
+                    let highest_amount = result.highest_amount;
+                    shops[shop_id] = {
+                        shop_id,
+                        shop_name,
+                        lowest_amount,
+                        highest_amount,
+                        "current_amount": 0,
+                        "meals": [result.meal_id],
+                        "details": [],
+                        "score": 0
+                    };
+                }
+            }
+            resolve(shops);
+        });
+    });
+}
+
 // 拿到餐點的金額表
 function _getMealsPrice() {
     return new Promise((resolve, reject) => {
