@@ -150,8 +150,9 @@ function _sortOrders(shops, mealsPrice) {
                         orderedShops[shopIndex].current_amount += details[detailKey].amount;
                         break;
                     }
-                } 
-                if (details[detailKey].first == 0) {break;}
+                }
+
+                if (details[detailIndex].first == 0) {continue;}
                 else {
                     if (orderedShops[shopIndex].shop_id == details[detailKey].first_shop) {
                         if (orderedShops[shopIndex].current_amount + details[detailKey].amount <= orderedShops[shopIndex].highest_amount) {
@@ -161,7 +162,8 @@ function _sortOrders(shops, mealsPrice) {
                         }
                     }
                 }
-                if (details[detailKey].second == 0) {break;}
+
+                if (details[detailIndex].second == 0) {continue;}
                 else {
                     if (orderedShops[shopIndex].shop_id == details[detailKey].second_shop) {
                         if (orderedShops[shopIndex].current_amount + details[detailKey].amount <= orderedShops[shopIndex].highest_amount) {
@@ -171,7 +173,8 @@ function _sortOrders(shops, mealsPrice) {
                         }
                     }
                 }
-                if (details[detailKey].third == 0) {break;}
+                
+                if (details[detailIndex].third == 0) {continue;}
                 else {
                     if (orderedShops[shopIndex].shop_id == details[detailKey].third_shop) {
                         if (orderedShops[shopIndex].current_amount + details[detailKey].amount <= orderedShops[shopIndex].highest_amount) {
