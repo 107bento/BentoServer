@@ -112,6 +112,20 @@ function sortOrder() {
         }
         // console.log(orderedShops['1'].meals['2']);
         // 
+// 拿到餐點的金額表
+function _getMealsPrice() {
+    return new Promise((resolve, reject) => {
+        const sql = 'select meal_id, meal_price from meals;'
+        connection.query(sql, (err, results) => {
+            if (err) {
+                reject(err);
+            }
+            let mealsPrice = {};
+            for (let result of results) {
+                mealsPrice[result.meal_id] = result.meal_price;
+            }
+            resolve(mealsPrice);
+        });
     });
 }
 
