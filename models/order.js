@@ -34,92 +34,233 @@ function setOrders() {
     });
 }
 
+// 排單演算法s
+function _sortOrders(shops, mealsPrice) {
     // 建立今天的日期
-    const date = moment().format('YYYY-MM-DD');
-    // 搜尋所有當日的訂單
-    const sql = 'select details.*, meals.shop_id, shops.* from details inner join meals,shops where order_id IN(select order_id from orders where order_time = "' + date + '")and details.meal_id = meals.meal_id and meals.shop_id = shops.shop_id;';
+    // 先寫死 date
+    // const date = moment().format('YYYY-MM-DD');
+    date = '2017-10-29';
+    // 搜尋所有當日的訂單 by 隨機
+    const sql = 'select * from details where order_id IN(select order_id from orders where order_time = "' + date + '")';
+    
+    /*
+        這邊還差要確認店家的是否有營業
+    */
 
-    // 計算有哪些店家
+    // 拿到所有訂單
     connection.query(sql, (err, results) => {
         if (err) {
             throw err;
         }
-        // 清空所有店家
-        let orderedShops = {};
-
-        // orderedShops[0] = other
-        orderedShops[0] = {
-            "shop_name" : "other",
-            "total_amount" : 0,
-            "lowest_amount": 0,
-            "highest_amount": 10000,
-            "meals" : {}
-        };
-
-        // 看每一筆訂單資料(第一輪)
-        for (let result of results ) {
-            // 先把餐點數量, 餐點Id, shop_id 存起來
+        // 每一筆訂單
+        let details = {};
+        // 一筆一筆看訂單 (main, wish_1, wish_2)，把 results 寫進去 details
+        for (let result of results) {
+            // 設定要儲存訂單內容
+            let detail_id = result.detail_id;
+            let subTotal = result.subtotal;
             let amount = result.amount;
-            let mealId = result.meal_id;
-            let shop_id = result.shop_id;
-            // 若 shop 未存在 => 增加店家
-            if(orderedShops[shop_id] == null) {
-                orderedShops[shop_id] = {
-                    "shop_name": result.shop_name,
-                    "total_amount": 0,
-                    "lowest_amount": result.lowest_amount,
-                    "highest_amount": result.highest_amount,
-                    "meals": {}
-                };
+            let randomPick = result.random_pick != 0? true: false;
+            let main = result.meal_id;
+            let first = result.wish_id_1;
+            let second = result.wish_id_2;
+            let third = result.wish_id_3;
+            let final = result.final_meal;
+            let state = result.state;
+
+            details[detail_id] = {detail_id, subTotal, amount, randomPick, main, first, second, third, final, state};
+            
+            // 主要餐點 +4 分
+            for (let shopIndex in shops) {
+                if (shops[shopIndex].meals.indexOf(main) != -1) {
+                    shops[shopIndex].score += 4;
+                    details[detail_id].main_shop = shopIndex;
+                    break;
+                }
             }
-            // 若點家的 meal 不存在 && 加入不超過上限 => 新增餐點，並把數量存進去
-            // 若點家的 meal 不存在 but 加入會超過上限 => 丟進other 變成 state : F
-            if(orderedShops[shop_id].meals[mealId] == null) {
-                if (amount + orderedShops[shop_id].total_amount <= orderedShops[shop_id].highest_amount) {
-                    orderedShops[shop_id].meals[mealId] = {
-                        amount,
-                        // detail_id =>誰訂, state =>確定了沒, round=>第幾輪
-                        // T 1 排第1輪就確定, F 2 排第2輪但不成功要進第3輪
-                        "details": [ { "result.detail_id" : result.detail_id, "subamount" : amount, "state" : "F", "round" : 1} ]
-                    };
-                    orderedShops[shop_id].total_amount += amount;
-                } else {
-                    if (orderedShops[0].meals[mealId] == null) {
-                        orderedShops[0].meals[mealId] = {
-                            amount,
-                            "details": [ { "result.detail_id" : result.detail_id, "subamount" : amount, "state" : "F", "round" : 1} ]
-                        };
-                    } else {
-                        orderedShops[0].meals[mealId].amount += amount;
-                        orderedShops[0].meals[mealId].details.push( { "result.detail_id" : result.detail_id, "subamount" : amount, "state": "F", "round" : 1 } ) ;
+
+            // 如果沒有第一志願序，直接跳下一訂單
+            if (first == 0) {
+                continue;
+            } else {
+                // 找到店家，第一志願 +3 分
+                for (let shopIndex in shops) {
+                    if (shops[shopIndex].meals.indexOf(first) != -1) {
+                        shops[shopIndex].score += 3;
+                        details[detail_id].first_shop = shopIndex;
+                        break;
                     }
-                    orderedShops[0].total_amount += amount;
                 }
-            } else {  // 店家存在 && 餐點也存在
-                // amount += result.meal_amount;(不確定-無義)
-                // 檢查加入會不會超過上限
-                // OK => 存紀錄（mealId.amount, datail_id, total_amount)
-                // 會爆 => 丟other & 存紀錄
-                if (orderedShops[shop_id].total_amount + result.meal_amount <= orderedShops[shop_id].highest_amount) {
-                    orderedShops[shop_id].meals[mealId].amount += amount;
-                    orderedShops[shop_id].meals[mealId].details.push( { "result.detail_id" : result.detail_id, "subamount" : amount, "state": "F", "round" : 1 } );
-                    orderedShops[shop_id].total_amount += amount;
-                } else {
-                    if (orderedShops[0].meals[mealId] == null) {
-                        orderedShops[0].meals[mealId] = {
-                            amount,
-                            "details": [ { "result.detail_id" : result.detail_id, "subamount" : amount, "state" : "F", "round" : 1} ]
-                        };
-                    } else {
-                        orderedShops[0].meals[mealId].amount += amount;
-                        orderedShops[0].meals[mealId].details.push( { "result.detail_id" : result.detail_id, "subamount" : amount, "state": "F", "round" : 1 } ) ;
+            }
+
+            // 如果沒有第二志願序，直接跳下一訂單
+            if (second == 0) {
+                continue;
+            } else {
+                // 找到店家，第二志願 +2 分
+                for (let shopIndex in shops) {
+                    if (shops[shopIndex].meals.indexOf(second) != -1) {
+                        shops[shopIndex].score += 2;
+                        details[detail_id].second_shop = shopIndex;
+                        break;
                     }
-                    orderedShops[0].total_amount += amount;
                 }
-            }  
+            }
+
+            // 如果沒有第三志願序，直接跳下一訂單
+            if (third == 0) {
+                continue;
+            } else {
+                // 找到店家，第三志願 +1 分
+                for (let shopIndex in shops) {
+                    if (shops[shopIndex].meals.indexOf(third) != -1) {
+                        shops[shopIndex].score += 1;
+                        details[detail_id].third_shop = shopIndex;
+                        break;
+                    }
+                }
+            }
         }
-        // console.log(orderedShops['1'].meals['2']);
-        // 
+
+        // 把大家有點的店家挑出來（用分數判斷）
+        let orderedShops = [];
+        for (let shopIndex in shops) {
+            if (shops[shopIndex].score <= 0){
+                continue;
+            } else {
+                orderedShops.push(shops[shopIndex]);
+            }
+        }
+
+        // 按照分數排店家順序
+        orderedShops.sort((a, b) => {
+            if (a.score > b.score) {
+                return -1;
+            } else if (a.score <= b.score) {
+                return 1;
+            }
+        });
+
+        // 一筆一筆訂單看每個主要 & 志願，如果有找到對應的店家，檢查有沒有超過 highest 後就可以加進去，否則換下一志願
+        for (let detailKey in details) {
+            for (let shopIndex in orderedShops) {
+                if (orderedShops[shopIndex].shop_id == details[detailKey].main_shop) {
+                    if (orderedShops[shopIndex].current_amount + details[detailKey].amount <= orderedShops[shopIndex].highest_amount) {
+                        orderedShops[shopIndex].details.push(details[detailKey].detail_id);
+                        orderedShops[shopIndex].current_amount += details[detailKey].amount;
+                        break;
+                    }
+                } 
+                if (details[detailKey].first == 0) {break;}
+                else {
+                    if (orderedShops[shopIndex].shop_id == details[detailKey].first_shop) {
+                        if (orderedShops[shopIndex].current_amount + details[detailKey].amount <= orderedShops[shopIndex].highest_amount) {
+                            orderedShops[shopIndex].details.push(details[detailKey].detail_id);
+                            orderedShops[shopIndex].current_amount += details[detailKey].amount;
+                            break;
+                        }
+                    }
+                }
+                if (details[detailKey].second == 0) {break;}
+                else {
+                    if (orderedShops[shopIndex].shop_id == details[detailKey].second_shop) {
+                        if (orderedShops[shopIndex].current_amount + details[detailKey].amount <= orderedShops[shopIndex].highest_amount) {
+                            orderedShops[shopIndex].details.push(details[detailKey].detail_id);
+                            orderedShops[shopIndex].current_amount += details[detailKey].amount;
+                            break;
+                        }
+                    }
+                }
+                if (details[detailKey].third == 0) {break;}
+                else {
+                    if (orderedShops[shopIndex].shop_id == details[detailKey].third_shop) {
+                        if (orderedShops[shopIndex].current_amount + details[detailKey].amount <= orderedShops[shopIndex].highest_amount) {
+                            orderedShops[shopIndex].details.push(details[detailKey].detail_id);
+                            orderedShops[shopIndex].current_amount += details[detailKey].amount;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // 店家確定有達底標的，把那些 meals 的 state 設成 2 （已成單），並設定已成單的 final_meal
+        for (let shopIndex in orderedShops) {
+            // 判斷有沒有超過低標
+            if (orderedShops[shopIndex].current_amount >= orderedShops[shopIndex].lowest_amount) {
+                // 如果有的話，看這個店家有哪些 details
+                for (let detailIndex in orderedShops[shopIndex].details) {
+                    // 設定該筆訂單的狀態 2 表示已成單
+                    details[orderedShops[shopIndex].details[detailIndex]].state = 2;
+
+                    // 找到是哪一個主要 or 志願是這個店家，如果是，填上 final_meal
+                    if (details[orderedShops[shopIndex].details[detailIndex]].main_shop == orderedShops[shopIndex].shop_id) {
+                        details[orderedShops[shopIndex].details[detailIndex]].final = details[orderedShops[shopIndex].details[detailIndex]].main;
+                        continue;
+                    } else if (details[orderedShops[shopIndex].details[detailIndex]].first_shop == orderedShops[shopIndex].shop_id) {
+                        details[orderedShops[shopIndex].details[detailIndex]].final = details[orderedShops[shopIndex].details[detailIndex]].first;
+                        continue;
+                    } else if (details[orderedShops[shopIndex].details[detailIndex]].second_shop == orderedShops[shopIndex].shop_id) {
+                        details[orderedShops[shopIndex].details[detailIndex]].final = details[orderedShops[shopIndex].details[detailIndex]].second;
+                        continue;
+                    } else if (details[orderedShops[shopIndex].details[detailIndex]].third_shop == orderedShops[shopIndex].shop_id) {
+                        details[orderedShops[shopIndex].details[detailIndex]].final = details[orderedShops[shopIndex].details[detailIndex]].third;
+                        continue;
+                    }
+                }
+            }
+        }
+
+        // 處理 random_pick 的人
+        for (let detailKey in details) {
+            if (details[detailKey].state == 1) {
+                details[detailKey].state = 4;
+            }
+            // 如果有 random_pick 又還沒成單的 detail
+            if (details[detailKey].randomPick && details[detailKey].state != 2) {
+                // 初始狀態
+                let state = 4;
+                // 預設還沒有 final_meal
+                let hasfinal = false;
+                // 看每一間店家
+                for (let shopIndex in orderedShops) {
+                    // 先判斷店家有沒有達低標，如果沒有就忽略
+                    if (orderedShops[shopIndex].current_amount < orderedShops[shopIndex].lowest_amount){continue;}
+                    // 加上去又不會超過最大數量
+                    if (orderedShops[shopIndex].current_amount + details[detailKey].amount <= orderedShops[shopIndex].highest_amount) {
+                        // 隨機取餐！！！！！！！！！！
+                        for (let mealIndex in orderedShops[shopIndex].meals) {
+                            let price = mealsPrice[orderedShops[shopIndex].meals[mealIndex]];
+                            if (price <= (details[detailKey].subTotal / details[detailKey].amount))  {
+                                orderedShops[shopIndex].details.push(details[detailKey].detail_id);
+                                orderedShops[shopIndex].current_amount += details[detailKey].amount;
+                                state = 2;
+                                details[detailKey].final = orderedShops[shopIndex].meals[mealIndex];
+                                hasfinal = true;
+                                break;
+                            }
+                        }
+                    }
+                    // 如果有 final，就不用再選店家了
+                    if (hasfinal) {break;}
+                }
+                details[detailKey].state = state;
+            }
+        }
+        
+        // 寫檔測試
+        // console.log(orderedShops);
+        // console.log(util.inspect(details, {"showHidden": true, "depth": null}));
+        // fs.writeFile('details.json', JSON.stringify(details));
+        // fs.writeFile('shops.json', JSON.stringify(orderedShops));
+
+        /*
+            還差寫入資料庫
+        */
+        
+    });
+}
+
 // 拿到所有店家，並初始變數的值
 function _getShops() {
     return new Promise((resolve, reject) => {
