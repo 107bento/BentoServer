@@ -24,8 +24,16 @@ function newOrder (username, orderTime, total, details, callback) {
     });
 }
 
-// 排單演算法
-function sortOrder() {
+// 結算訂單的起點
+function setOrders() {
+    // 先拿到所有店家與餐點的金額表再開始排序
+    Promise.all([_getShops(), _getMealsPrice()]).then((data) => {
+        const shops = data[0];
+        const mealsPrice = data[1];
+        _sortOrders(shops, mealsPrice);
+    });
+}
+
     // 建立今天的日期
     const date = moment().format('YYYY-MM-DD');
     // 搜尋所有當日的訂單
