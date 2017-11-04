@@ -117,5 +117,5 @@ function sortOrder() {
 
 module.exports = {
     newOrder,
-    sortOrder
+    setOrders
 };
