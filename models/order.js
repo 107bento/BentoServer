@@ -142,44 +142,44 @@ function _sortOrders(shops, mealsPrice) {
         });
 
         // 一筆一筆訂單看每個主要 & 志願，如果有找到對應的店家，檢查有沒有超過 highest 後就可以加進去，否則換下一志願
-        for (let detailIndex in details) {
+        for (let detailKey in details) {
             for (let shopIndex in orderedShops) {
-                if (orderedShops[shopIndex].shop_id == details[detailIndex].main_shop) {
-                    if (orderedShops[shopIndex].current_amount + details[detailIndex].amount <= orderedShops[shopIndex].highest_amount) {
-                        orderedShops[shopIndex].details.push(details[detailIndex].detail_id);
-                        orderedShops[shopIndex].current_amount += details[detailIndex].amount;
+                if (orderedShops[shopIndex].shop_id == details[detailKey].main_shop) {
+                    if (orderedShops[shopIndex].current_amount + details[detailKey].amount <= orderedShops[shopIndex].highest_amount) {
+                        orderedShops[shopIndex].details.push(details[detailKey].detail_id);
+                        orderedShops[shopIndex].current_amount += details[detailKey].amount;
                         break;
                     }
                 }
 
-                if (details[detailIndex].first == 0) {continue;}
+                if (details[detailKey].first == 0) {continue;}
                 else {
-                    if (orderedShops[shopIndex].shop_id == details[detailIndex].first_shop) {
-                        if (orderedShops[shopIndex].current_amount + details[detailIndex].amount <= orderedShops[shopIndex].highest_amount) {
-                            orderedShops[shopIndex].details.push(details[detailIndex].detail_id);
-                            orderedShops[shopIndex].current_amount += details[detailIndex].amount;
+                    if (orderedShops[shopIndex].shop_id == details[detailKey].first_shop) {
+                        if (orderedShops[shopIndex].current_amount + details[detailKey].amount <= orderedShops[shopIndex].highest_amount) {
+                            orderedShops[shopIndex].details.push(details[detailKey].detail_id);
+                            orderedShops[shopIndex].current_amount += details[detailKey].amount;
                             break;
                         }
                     }
                 }
 
-                if (details[detailIndex].second == 0) {continue;}
+                if (details[detailKey].second == 0) {continue;}
                 else {
-                    if (orderedShops[shopIndex].shop_id == details[detailIndex].second_shop) {
-                        if (orderedShops[shopIndex].current_amount + details[detailIndex].amount <= orderedShops[shopIndex].highest_amount) {
-                            orderedShops[shopIndex].details.push(details[detailIndex].detail_id);
-                            orderedShops[shopIndex].current_amount += details[detailIndex].amount;
+                    if (orderedShops[shopIndex].shop_id == details[detailKey].second_shop) {
+                        if (orderedShops[shopIndex].current_amount + details[detailKey].amount <= orderedShops[shopIndex].highest_amount) {
+                            orderedShops[shopIndex].details.push(details[detailKey].detail_id);
+                            orderedShops[shopIndex].current_amount += details[detailKey].amount;
                             break;
                         }
                     }
                 }
                 
-                if (details[detailIndex].third == 0) {continue;}
+                if (details[detailKey].third == 0) {continue;}
                 else {
-                    if (orderedShops[shopIndex].shop_id == details[detailIndex].third_shop) {
-                        if (orderedShops[shopIndex].current_amount + details[detailIndex].amount <= orderedShops[shopIndex].highest_amount) {
-                            orderedShops[shopIndex].details.push(details[detailIndex].detail_id);
-                            orderedShops[shopIndex].current_amount += details[detailIndex].amount;
+                    if (orderedShops[shopIndex].shop_id == details[detailKey].third_shop) {
+                        if (orderedShops[shopIndex].current_amount + details[detailKey].amount <= orderedShops[shopIndex].highest_amount) {
+                            orderedShops[shopIndex].details.push(details[detailKey].detail_id);
+                            orderedShops[shopIndex].current_amount += details[detailKey].amount;
                             break;
                         }
                     }
