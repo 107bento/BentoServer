@@ -47,13 +47,13 @@ usersRouter.patch('/', function (req, res) {
         });
     }
     user.modify(username, password, phone, email, name, (error, results) => {
-            if (typeof(results) !== undefined && typeof(error) == "undefined") {
-                return res.status(200).json(results);
-            } else {
-                return res.status(400).json({
-                       error: error
-                });
-            }
+        if (typeof(results) !== undefined && typeof(error) == "undefined") {
+            return res.status(200).json(results);
+        } else {
+            return res.status(400).json({
+                    error: error
+            });
+        }
     });
 });
 
