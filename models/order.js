@@ -73,7 +73,7 @@ function _sortOrders(shops, mealsPrice) {
             // 主要餐點 +4 分
             for (let shopIndex in shops) {
                 if (shops[shopIndex].meals.indexOf(main) != -1) {
-                    shops[shopIndex].score += 4;
+                    shops[shopIndex].score += (4 * amount);
                     details[detail_id].main_shop = shopIndex;
                     break;
                 }
@@ -86,7 +86,7 @@ function _sortOrders(shops, mealsPrice) {
                 // 找到店家，第一志願 +3 分
                 for (let shopIndex in shops) {
                     if (shops[shopIndex].meals.indexOf(first) != -1) {
-                        shops[shopIndex].score += 3;
+                        shops[shopIndex].score += (3 * amount);
                         details[detail_id].first_shop = shopIndex;
                         break;
                     }
@@ -100,7 +100,7 @@ function _sortOrders(shops, mealsPrice) {
                 // 找到店家，第二志願 +2 分
                 for (let shopIndex in shops) {
                     if (shops[shopIndex].meals.indexOf(second) != -1) {
-                        shops[shopIndex].score += 2;
+                        shops[shopIndex].score += (2 * amount);
                         details[detail_id].second_shop = shopIndex;
                         break;
                     }
@@ -114,7 +114,7 @@ function _sortOrders(shops, mealsPrice) {
                 // 找到店家，第三志願 +1 分
                 for (let shopIndex in shops) {
                     if (shops[shopIndex].meals.indexOf(third) != -1) {
-                        shops[shopIndex].score += 1;
+                        shops[shopIndex].score += (1 * amount);
                         details[detail_id].third_shop = shopIndex;
                         break;
                     }
