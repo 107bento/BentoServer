@@ -82,4 +82,35 @@ usersRouter.post('/', (req, res) => {
     });
 });
 
+// 儲値
+usersRouter.post('/store', (req, res) => {
+    
+    const username = user.checkLogin(req.cookies);
+    //檢查有沒有 cookie
+    if (!username) {
+        //console.log(_cookie);
+        return res.status(401).json({
+            error: 'please login!'
+        });
+    }
+
+    // 儲值金額是否為這些數字 100 250 400 900 1000
+    const value = req.body.value;
+    if (value != 100 && value != 250 && value != 400 && value != 900 && value != 1000) {
+        return res.status(400).json({
+            error: 'The value is incorrect.'
+        });
+    }
+
+    // call function 儲值
+    user.storeValue(username, value, (error, success) => {
+        if (typeof(success) !== undefined && typeof(error) == "undefined") {
+            return res.status(200).json(success);
+        } else {
+            return res.status(400).json(error);
+        }
+    });
+
+});
+
 module.exports = usersRouter;
