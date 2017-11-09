@@ -5,7 +5,9 @@ const user = require('./models/user');
 
 //取個人資料
 usersRouter.get('/', function (req, res) {
-    let username = user.checkLogin(req.cookies);
+
+    const username = user.checkLogin(req.cookies);
+    // 如果沒有 cookie
     if (!username) {
         return res.status(401).json({
             error: 'please login!'
@@ -24,7 +26,9 @@ usersRouter.get('/', function (req, res) {
 
 //修改個人資料
 usersRouter.patch('/', function (req, res) {
-    let username = user.checkLogin(req.cookies);
+
+    const username = user.checkLogin(req.cookies);
+    // 如果沒有 cookie
     if (!username) {
         //console.log(_cookie);
         return res.status(401).json({
