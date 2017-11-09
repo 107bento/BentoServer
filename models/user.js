@@ -75,6 +75,8 @@ function showUser (username, callback) {
         return;
     });
 }
+
+// 對應 cookie 
 function checkLogin(reqCookie) {
     let uuid = reqCookie.BENTOSESSIONID;
     if (_cookies[uuid]) {
