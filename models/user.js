@@ -1,3 +1,4 @@
+const moment = require('moment');
 // 登入驗證
 function validate (username, password, callback) { 
     
@@ -74,6 +75,8 @@ function showUser (username, callback) {
         return;
     });
 }
+
+// 對應 cookie 
 function checkLogin(reqCookie) {
     let uuid = reqCookie.BENTOSESSIONID;
     if (_cookies[uuid]) {
@@ -83,10 +86,47 @@ function checkLogin(reqCookie) {
     }
 }
 
+// 儲值
+function storeValue(username, value, callback) {
+    
+    // transaction 如果有一個 error 全部 rollback
+    connection.beginTransaction((err) => {
+        if (err) { 
+            callback({"error": "Something went wrong."}, undefined);
+            throw err; 
+        }
+
+        // 先把帳號裡的錢加上去
+        let sql = 'update users set money = money + ' + value + ' where user_id = "' + username +'";';
+        connection.query(sql, (err, results) => {
+            if (err) {
+                callback({"error": "Something went wrong."}, undefined);
+                return connection.rollback(function() {
+                    throw err;
+                });
+            }
+            // 紀錄該筆 record
+            let date = moment().format('YYYY-MM-DD');
+            sql = 'insert into records (date, remain, user_id, value) VALUES ("'+ date +'", (select money from users where user_id = "' + username + '"), "' + username + '", ' + value + ');';
+            connection.query(sql, (err, results) => {
+                if (err) {
+                    callback({"error": "Something went wrong."}, undefined);
+                    return connection.rollback(function() {
+                        throw err;
+                    });
+                }
+                callback(undefined, {"success": "store successfully!"});
+                return;
+            });
+        });
+    });
+}
+
 module.exports = {
     validate,
     register,
     modify,
     showUser,
-    checkLogin
+    checkLogin,
+    storeValue
 };

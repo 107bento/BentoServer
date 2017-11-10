@@ -5,7 +5,9 @@ const user = require('./models/user');
 
 //取個人資料
 usersRouter.get('/', function (req, res) {
-    let username = user.checkLogin(req.cookies);
+
+    const username = user.checkLogin(req.cookies);
+    // 如果沒有 cookie
     if (!username) {
         return res.status(401).json({
             error: 'please login!'
@@ -24,7 +26,9 @@ usersRouter.get('/', function (req, res) {
 
 //修改個人資料
 usersRouter.patch('/', function (req, res) {
-    let username = user.checkLogin(req.cookies);
+
+    const username = user.checkLogin(req.cookies);
+    // 如果沒有 cookie
     if (!username) {
         //console.log(_cookie);
         return res.status(401).json({
@@ -43,13 +47,13 @@ usersRouter.patch('/', function (req, res) {
         });
     }
     user.modify(username, password, phone, email, name, (error, results) => {
-            if (typeof(results) !== undefined && typeof(error) == "undefined") {
-                return res.status(200).json(results);
-            } else {
-                return res.status(400).json({
-                       error: error
-                });
-            }
+        if (typeof(results) !== undefined && typeof(error) == "undefined") {
+            return res.status(200).json(results);
+        } else {
+            return res.status(400).json({
+                    error: error
+            });
+        }
     });
 });
 
@@ -76,6 +80,37 @@ usersRouter.post('/', (req, res) => {
             return res.status(400).json(error);
         }
     });
+});
+
+// 儲値
+usersRouter.post('/store', (req, res) => {
+    
+    const username = user.checkLogin(req.cookies);
+    //檢查有沒有 cookie
+    if (!username) {
+        //console.log(_cookie);
+        return res.status(401).json({
+            error: 'please login!'
+        });
+    }
+
+    // 儲值金額是否為這些數字 100 250 400 900 1000
+    const value = req.body.value;
+    if (value != 100 && value != 250 && value != 400 && value != 900 && value != 1000) {
+        return res.status(400).json({
+            error: 'The value is incorrect.'
+        });
+    }
+
+    // call function 儲值
+    user.storeValue(username, value, (error, success) => {
+        if (typeof(success) !== undefined && typeof(error) == "undefined") {
+            return res.status(200).json(success);
+        } else {
+            return res.status(400).json(error);
+        }
+    });
+
 });
 
 module.exports = usersRouter;
