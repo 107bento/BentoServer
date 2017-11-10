@@ -78,15 +78,18 @@ function onlyshowMeal (shop_id,callback) {
         if (err) {
             throw err;
         }
-
+        if (results.length == 0) {
+            meals = "";  
+        } else {
         //hash 
-        for(let result of results) { // 讀每一筆 sql 查詢出來的資料
-            meals[result.meal_id] = {
-                "meal_id": result.meal_id,
-                "meal_name": result.meal_name,
-                "meal_price": result.meal_price,
-                "meal_discount": result.meal_discount
-            };  
+            for(let result of results) { // 讀每一筆 sql 查詢出來的資料
+                meals[result.meal_id] = {
+                    "meal_id": result.meal_id,
+                    "meal_name": result.meal_name,
+                    "meal_price": result.meal_price,
+                    "meal_discount": result.meal_discount
+                };  
+            }
         }
         callback(undefined, meals);
         return;
