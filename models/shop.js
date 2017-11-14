@@ -45,16 +45,16 @@ function onlyshowShop (callback) {
     // sql指令 -> 所有shop data
     let sql = `select shops.shop_id,shop_name,lowest_amount,highest_amount,shipping_fee,shop_discount from shops Group by shop_id;`;  
     connection.query(sql, (err, results) => {
-        let shops = {};
+        let tmp = {};
         if (err) {
             throw err;
         }
 
         //hash 
         for(let result of results) { // 讀每一筆 sql 查詢出來的資料
-            if(shops[result.shop_id] == null) {
+            if(tmp[result.shop_id] == null) {
                 // shop 未存在,增加店家
-                shops[result.shop_id] = {
+                tmp[result.shop_id] = {
                     "shop_id": result.shop_id,
                     "shop_name": result.shop_name,
                     "lowest_amount": result.lowest_amount,
@@ -64,35 +64,50 @@ function onlyshowShop (callback) {
                 };
             }    
         }
+
+        let shops = [];
+        for (let shopKey in tmp) {
+            shops.push(tmp[shopKey]);
+        }
+
         callback(undefined, shops);
         return;
     });
 }
 
 // 拿到店家 id 對應的 Meal
-function onlyshowMeal (shop_id,callback) {
+function onlyshowMeal (shop_id, callback) {
     // sql指令 -> 所有shop data
     let sql = `select meals.meal_id,meal_name,meal_price,meal_discount from meals where meals.shop_id =` + shop_id +` Group by meals.meal_id;`;   
     connection.query(sql, (err, results) => {
-        let meals = {};
         if (err) {
+            callback("Something went wrong.", undefined);
             throw err;
+            return;
         }
         if (results.length == 0) {
-            meals = "";  
+            callback("This shop doesn't have menu or not exist.", undefined);
+            return;
         } else {
         //hash 
+            let tmp = {};
             for(let result of results) { // 讀每一筆 sql 查詢出來的資料
-                meals[result.meal_id] = {
+                tmp[result.meal_id] = {
                     "meal_id": result.meal_id,
                     "meal_name": result.meal_name,
                     "meal_price": result.meal_price,
                     "meal_discount": result.meal_discount
                 };  
             }
+
+            let meals = [];
+
+            for(let mealKey in tmp) {
+                meals.push(tmp[mealKey]);
+            }
+            callback(undefined, meals);
+            return;
         }
-        callback(undefined, meals);
-        return;
     });
 }
 module.exports = {

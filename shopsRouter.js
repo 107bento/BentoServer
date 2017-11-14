@@ -36,14 +36,7 @@ shopsRouter.get('/:id', (req, res) => {
     const shop_id = parseInt(req.params.id);
     shop.onlyshowMeal(shop_id, (error, results) => {    
         if (typeof(results) !== undefined && typeof(error) == "undefined") {
-            if (results === "") {
-                console.log(results);
-                return res.status(400).json({
-                    error: "this shop doesn't have menu or not exist"
-                });
-            } else {
-                return res.status(200).json(results);
-            }
+            return res.status(200).json(results);
         } else {
             return res.status(400).json({
                 error
