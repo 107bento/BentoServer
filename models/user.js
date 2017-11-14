@@ -1,4 +1,5 @@
 const moment = require('moment');
+const shop = require('./shop');
 // 登入驗證
 function validate (username, password, callback) { 
     
