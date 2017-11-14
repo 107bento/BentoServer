@@ -123,11 +123,67 @@ function storeValue(username, value, callback) {
     });
 }
 
+// 拿到個人的訂單資訊
+function getOrders(username, callback) {
+    let sql = 'select * from details, orders where details.order_id = orders.order_id and user_id = "' + username + '";';
+    shop.getMealsInfo().then((mealsInfo) => {
+        connection.query(sql, (err, results) => {
+            if (err) {
+                return callback({"error": "Something went wrong."}, undefined);
+                throw err;
+            }
+
+            let tmp = [];
+            for (let result of results) {
+                let detail = {
+                    "detail_id": result.detail_id,
+                    "amount": result.amount,
+                    "subtotal": result.subtotal,
+                    "state": result.state,
+                    "meal": result.meal_id != 0 ? mealsInfo[result.meal_id] : null,
+                    "wish_1": result.wish_id_1 != 0 ? mealsInfo[result.wish_id_1] : null,
+                    "wish_2": result.wish_id_2 != 0 ? mealsInfo[result.wish_id_2] : null,
+                    "wish_3": result.wish_id_3 != 0 ? mealsInfo[result.wish_id_3] : null,
+                    "random_pick": result.random_pick != 0 ? true : false,
+                    "final_meal": result.final_meal != null ? mealsInfo[result.final_meal] : null,
+                }
+                if (tmp[result.order_id] != null) {
+                    tmp[result.order_id].details.push(detail);
+                } else {
+                    let order_id = result.order_id;
+                    let user_id = result.user_id;
+                    let order_time = result.order_time;
+                    let total = result.total;
+                    tmp[result.order_id] = {
+                        order_id,
+                        user_id,
+                        order_time,
+                        total,
+                        "details": [detail]
+                    }
+                }
+            }
+
+            let orders = [];
+            for (let orderKey in tmp) {
+                orders.push(tmp[orderKey]);
+            }
+
+            return callback(undefined, orders);
+        });
+    }).catch((error) => {
+        throw error;
+    });
+
+
+}
+
 module.exports = {
     validate,
     register,
     modify,
     showUser,
     checkLogin,
-    storeValue
+    storeValue,
+    getOrders
 };
