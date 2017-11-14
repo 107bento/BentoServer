@@ -43,7 +43,7 @@ function showShop (callback) {
 // 只拿到店家
 function onlyshowShop (callback) {
     // sql指令 -> 所有shop data
-    let sql = `select shops.shop_id,shop_name,lowest_amount,highest_amount,shipping_fee,shop_discount from shops Group by shop_id;`;  
+    let sql = `select shops.shop_id,shop_name,lowest_amount,highest_amount,shipping_fee,shop_discount, (Select count(*) from details, meals where details.meal_id = meals.meal_id and shops.shop_id = meals.shop_id) as current_people from shops Group by shop_id;`;  
     connection.query(sql, (err, results) => {
         let tmp = {};
         if (err) {
@@ -60,7 +60,8 @@ function onlyshowShop (callback) {
                     "lowest_amount": result.lowest_amount,
                     "highest_amount": result.highest_amount,
                     "shipping_fee": result.shipping_fee,
-                    "shop_discount": result.shop_discount
+                    "shop_discount": result.shop_discount,
+                    "current_people": result.current_people
                 };
             }    
         }
