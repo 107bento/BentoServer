@@ -110,10 +110,36 @@ function onlyshowMeal (shop_id, callback) {
         }
     });
 }
+
+// 拿到所有餐點的詳細資訊
+function getMealsInfo() {
+    return new Promise((resolve, reject) => {
+        const sql = 'select meal_id, meal_name, meal_price, shop_name, shops.shop_id from shops, meals where meals.shop_id = shops.shop_id;';
+        connection.query(sql, (err, results) => {
+            if (err) {
+                reject(err);
+            }
+            let mealsInfo = {};
+            // console.log(results);
+            for (let result of results) {
+                mealsInfo[result.meal_id] = {
+                    "meal_id": result.meal_id,
+                    "meal_name": result.meal_name,
+                    "meal_price": result.meal_price,
+                    "shop_name": result.shop_name,
+                    "shop_id": result.shop_id,
+                };
+            }
+            resolve(mealsInfo);
+        });
+    });
+}
+
 module.exports = {
     showShop,
     onlyshowShop,
-    onlyshowMeal
+    onlyshowMeal,
+    getMealsInfo
 };
 
 
