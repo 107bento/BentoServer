@@ -2,7 +2,7 @@
 function newOrder (username, orderTime, total, details, callback) {
     // sql指令 -> 新增購物車
     let sql = "insert into orders  (user_id, order_time, total) values ('" + username + "','" + orderTime + "'," + total + ");";
-    //console.log(sql);
+    // console.log(sql);
     connection.query(sql, (err, results) => {
         if (err) {
             throw err;
@@ -31,6 +31,8 @@ function setOrders() {
         const shops = data[0];
         const mealsPrice = data[1];
         _sortOrders(shops, mealsPrice);
+    }).catch((error) => {
+        throw error;
     });
 }
 

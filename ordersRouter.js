@@ -13,7 +13,7 @@ ordersRouter.post('/', (req, res) => {
             error: 'please login!'
         });
     }
-    let orderTime = moment().format('YYYY/MM/DD HH:mm:ss'); 
+    let orderTime = moment().format('YYYY-MM-DD hh:mm:ss'); 
     let total = req.body.total; 
     let details = req.body.details; 
     /* 

@@ -46,7 +46,7 @@ shopsRouter.get('/:id', (req, res) => {
             }
         } else {
             return res.status(400).json({
-                error: error
+                error
             });
         }
     });
