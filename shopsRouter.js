@@ -31,18 +31,30 @@ shopsRouter.get('/', (req, res) => {
     });
 });
 
-// 只秀店家id 對應 Meals
+// 只秀店家id 對應 Meals or 全部店家的菜單含店家資訊
 shopsRouter.get('/:id', (req, res) => {
-    const shop_id = parseInt(req.params.id);
-    shop.onlyshowMeal(shop_id, (error, results) => {    
-        if (typeof(results) !== undefined && typeof(error) == "undefined") {
-            return res.status(200).json(results);
-        } else {
-            return res.status(400).json({
-                error
-            });
-        }
-    });
+    let shop_id = req.params.id;
+    if (shop_id == 'all') {
+        shop.showShops((error, results) => {    
+            if (typeof(results) !== undefined && typeof(error) == "undefined") {
+                return res.status(200).json(results);
+            } else {
+                return res.status(400).json({
+                    error
+                });
+            }
+        });
+    } else {
+        shop.onlyshowMeal(parseInt(shop_id), (error, results) => {    
+            if (typeof(results) !== undefined && typeof(error) == "undefined") {
+                return res.status(200).json(results);
+            } else {
+                return res.status(400).json({
+                    error
+                });
+            }
+        });
+    }
 });
 
 module.exports = shopsRouter;
