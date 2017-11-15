@@ -107,8 +107,8 @@ function storeValue(username, value, callback) {
                 });
             }
             // 紀錄該筆 record
-            let date = moment().format('YYYY-MM-DD');
-            sql = 'insert into records (date, remain, user_id, value) VALUES ("'+ date +'", (select money from users where user_id = "' + username + '"), "' + username + '", ' + value + ');';
+            let time = moment().format('YYYY-MM-DD HH:mm:ss');
+            sql = 'insert into records (time, remain, user_id, value) VALUES ("'+ time +'", (select money from users where user_id = "' + username + '"), "' + username + '", ' + value + ');';
             connection.query(sql, (err, results) => {
                 if (err) {
                     callback({"error": "Something went wrong."}, undefined);
@@ -174,8 +174,27 @@ function getOrders(username, callback) {
     }).catch((error) => {
         throw error;
     });
+}
 
-
+// 拿到個人金錢紀錄
+function getRecords(username, callback) {
+    let sql = 'select * from records where user_id = "' + username + '";';
+    connection.query(sql, (err, results) => {
+        if (err) {
+            throw err;
+        }
+        let records = [];
+        for (let result of results) {
+            records.push({
+                "record_id": result.record_id,
+                "date": result.date,
+                "value": result.value,
+                "remain": result.remain
+            })
+        }
+        callback(undefined, records);
+        return;
+    });
 }
 
 module.exports = {
@@ -185,5 +204,6 @@ module.exports = {
     showUser,
     checkLogin,
     storeValue,
-    getOrders
+    getOrders,
+    getRecords
 };
