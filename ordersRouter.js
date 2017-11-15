@@ -13,7 +13,15 @@ ordersRouter.post('/', (req, res) => {
             error: 'please login!'
         });
     }
-    let orderTime = moment().format('YYYY-MM-DD hh:mm:ss'); 
+    let orderTime = moment().format('YYYY-MM-DD HH:mm:ss');
+
+    // 設定可以訂餐的時間
+    // if (orderTime > moment().format('YYYY-MM-DD 09:59:59') && orderTime < moment().format('YYYY-MM-DD 18:00:00') ) {
+    //     return res.status(400).json({
+    //         error: 'You can not order now.'
+    //     });
+    // }
+
     let total = req.body.total; 
     let details = req.body.details; 
     /* 
