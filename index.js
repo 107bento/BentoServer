@@ -7,14 +7,14 @@ const shopsRouter = require('./shopsRouter.js');
 const ordersRouter = require('./ordersRouter.js');
 const mysql = require('mysql');
 const cookieParser = require('cookie-parser');
+const env = require('./env.json');
 
 // 跟 DB 建立連線
 connection = mysql.createConnection({
     host     : 'localhost',
-    user     : 'root',
-    password : '',
-    database : 'bento107',
-    insecureAuth : true
+    user     : env.DBuser,
+    password : env.DBpassword,
+    database : 'bento107'
 });
 
 /**
