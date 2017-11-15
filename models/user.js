@@ -187,7 +187,7 @@ function getRecords(username, callback) {
         for (let result of results) {
             records.push({
                 "record_id": result.record_id,
-                "date": result.date,
+                "time": result.time,
                 "value": result.value,
                 "remain": result.remain
             })
