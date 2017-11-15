@@ -13,7 +13,8 @@ connection = mysql.createConnection({
     host     : 'localhost',
     user     : 'root',
     password : '',
-    database : 'bento107'
+    database : 'bento107',
+    insecureAuth : true
 });
 
 /**
