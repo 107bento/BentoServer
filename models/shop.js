@@ -1,40 +1,45 @@
 // 全部店家 & 菜單
-function showShop (callback) {
+function showShops (callback) {
     // sql指令 -> 所有shop data
     let sql = `select shops.shop_id,shop_name,lowest_amount,highest_amount,shipping_fee,shop_discount,meals.meal_id,meal_name,meal_price,meal_discount from shops, meals where shops.shop_id = meals.shop_id Group by meals.meal_id;`;  
     connection.query(sql, (err, results) => {
-        let shops = {};
+        let tmp = {};
         if (err) {
             throw err;
         }
 
         //hash 
         for(let result of results) { // 讀每一筆 sql 查詢出來的資料
-            if(shops[result.shop_id] == null) {
+            if(tmp[result.shop_id] == null) {
                 // shop 未存在,增加店家
-                shops[result.shop_id] = {
+                tmp[result.shop_id] = {
                     "shop_id": result.shop_id,
                     "shop_name": result.shop_name,
                     "lowest_amount": result.lowest_amount,
                     "highest_amount": result.highest_amount,
                     "shipping_fee": result.shipping_fee,
-                    "shop_discount": result.shop_discount
+                    "shop_discount": result.shop_discount,
+                    "meals": []
                 };
             } 
             // 最後再加餐點
             // return answer ? "yes" : "no";
             // answer is true then return "yes" , answer is false then return "no"
             // shops[result.shop_id].meals ?= shops[result.shop_id].meals : {} ;
-            shops[result.shop_id].meals =  typeof shops[result.shop_id].meals === 'object' ? shops[result.shop_id].meals : {} ;
-            shops[result.shop_id].meals[result.meal_id] = {
+            // tmp[result.shop_id].meals =  typeof tmp[result.shop_id].meals === 'object' ? tmp[result.shop_id].meals : {} ;
+            tmp[result.shop_id].meals.push({
                 "meal_id": result.meal_id,
                 "meal_name": result.meal_name,
                 "meal_price": result.meal_price,
                 "meal_discount": result.meal_discount
-            };
-            
-            
+            });
         }
+
+        let shops = [];
+        for (let shopKey in tmp) {
+            shops.push(tmp[shopKey]);
+        }
+
         callback(undefined, shops);
         return;
     });
@@ -137,7 +142,7 @@ function getMealsInfo() {
 }
 
 module.exports = {
-    showShop,
+    showShops,
     onlyshowShop,
     onlyshowMeal,
     getMealsInfo
