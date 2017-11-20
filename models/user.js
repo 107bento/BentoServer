@@ -107,8 +107,13 @@ function storeValue(username, value, callback) {
                 });
             }
             // 紀錄該筆 record
+            
+            /**
+             * 尚未確定 records 裡的 remain 要放 user 的 remain 還是 total
+             */
+
             let time = moment().format('YYYY-MM-DD HH:mm:ss');
-            sql = 'insert into records (time, remain, user_id, value) VALUES ("'+ time +'", (select money from users where user_id = "' + username + '"), "' + username + '", ' + value + ');';
+            sql = 'insert into records (time, remain, user_id, value, record_detail) VALUES ("'+ time +'", (select total from users where user_id = "' + username + '"), "' + username + '", ' + value + ' , "store");';
             connection.query(sql, (err, results) => {
                 if (err) {
                     callback({"error": "Something went wrong."}, undefined);
@@ -197,6 +202,7 @@ function getRecords(username, callback) {
         for (let result of results) {
             records.push({
                 "record_id": result.record_id,
+                "record_detail": result.record_detail,
                 "time": result.time,
                 "value": result.value,
                 "remain": result.remain
