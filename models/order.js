@@ -1,4 +1,5 @@
 const moment = require('moment');
+const async = require('async');
 // 新增訂單
 function newOrder (username, orderTime, total, details, callback) {
     // sql指令 -> 新增購物車
