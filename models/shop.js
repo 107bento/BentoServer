@@ -48,8 +48,15 @@ function showShops (callback) {
 
 // 只拿到店家
 function onlyshowShop (callback) {
+    // 設定訂單開始的起訖時間
+    const start = moment().add(-1, 'days').format('YYYY-MM-DD 18:00:00');
+    const end = moment().format('YYYY-MM-DD 09:59:59');
+
     // sql指令 -> 所有shop data
-    let sql = `select shops.shop_id,shop_name,lowest_amount,highest_amount,shipping_fee,shop_discount, (Select count(*) from details, meals where details.meal_id = meals.meal_id and shops.shop_id = meals.shop_id) as current_people from shops Group by shop_id;`;  
+    let sql = `select shops.shop_id,shop_name,lowest_amount,highest_amount,shipping_fee,shop_discount, (Select count(*) from details, meals where details.meal_id = meals.meal_id and shops.shop_id = meals.shop_id) as current_people from shops Group by shop_id;`;
+    
+    // let sql = 'select shops.shop_id,shop_name,lowest_amount,highest_amount,shipping_fee,shop_discount, (Select count(*) from details, meals, orders where details.meal_id = meals.meal_id and shops.shop_id = meals.shop_id and details.order_id = orders.order_id and (orders.order_time <= "' + end +'" and orders.order_time >= "' + start + '")) as current_people from shops Group by shop_id;';
+
     connection.query(sql, (err, results) => {
         let tmp = {};
         if (err) {
