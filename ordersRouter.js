@@ -43,7 +43,7 @@ ordersRouter.post('/', (req, res) => {
     order.newOrder(username, orderTime, total, details, (error, results) => { 
         if (typeof(results) !== undefined && typeof(error) == "undefined") { 
             return res.status(200).json({ 
-                message: 'order successfully.' 
+                message: results
             }); 
         } else { 
             return res.status(400).json({ 
