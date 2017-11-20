@@ -38,7 +38,7 @@ function register (username, password, name, phone, email, callback) {
     }
 
     // sql指令 -> 增加新使用者
-    let sql = `INSERT INTO users (user_id , password , phone , email , money , name) VALUES ( '${username}' , '${password}' ,'${phone}','${email}', 0, '${name}');`;  
+    let sql = `INSERT INTO users (user_id, password, phone, email, total, block, remain, name) VALUES ( '${username}' , '${password}' ,'${phone}','${email}', 0, 0, 0, '${name}');`;  
     connection.query(sql, (err, results) => {
         if (err) {
             callback({error: 'username has been existed.'}, undefined);
@@ -98,7 +98,7 @@ function storeValue(username, value, callback) {
         }
 
         // 先把帳號裡的錢加上去
-        let sql = 'update users set money = money + ' + value + ' where user_id = "' + username +'";';
+        let sql = 'update users set total = total + ' + value + ', remain = remain + ' + value + ' where user_id = "' + username +'";';
         connection.query(sql, (err, results) => {
             if (err) {
                 callback({"error": "Something went wrong."}, undefined);
