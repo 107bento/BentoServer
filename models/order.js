@@ -2,27 +2,78 @@ const moment = require('moment');
 const async = require('async');
 // 新增訂單
 function newOrder (username, orderTime, total, details, callback) {
-    // sql指令 -> 新增購物車
-    let sql = "insert into orders  (user_id, order_time, total) values ('" + username + "','" + orderTime + "'," + total + ");";
-    // console.log(sql);
-    connection.query(sql, (err, results) => {
-        if (err) {
-            throw err;
+
+    /**
+     * 還沒檢查金額是否足夠
+     */
+
+    // transaction 如果有一個 error 全部 rollback
+    connection.beginTransaction((err) => {
+        if (err) { 
+            callback({"error": "Something went wrong."}, undefined);
+            throw err; 
         }
-        //console.log(results.insertId);
-        let orderId = results.insertId;
-        for (let detail of details) {
-            let sql2 = "insert into details (meal_id, amount, subtotal, state, wish_id_1, wish_id_2, wish_id_3, random_pick, order_id) values" +
-                   "(" + detail.meal_id + "," + detail.amount + "," + detail.subtotal + ", 1 ," + detail.wish_id_1 + "," + detail.wish_id_2 + "," + detail.wish_id_3 + "," +detail.random_pick + "," +orderId+ ");";
-            
-            connection.query(sql2, (err, results) => {
-                if (err) {
+
+        // sql指令 -> 新增購物車
+        let sql = "insert into orders  (user_id, order_time, total) values ('" + username + "','" + orderTime + "'," + total + ");";
+        
+        connection.query(sql, (err, results) => {
+            if (err) {
+                callback({"error": "Something went wrong."}, undefined);
+                return connection.rollback(function() {
                     throw err;
+                });
+            }
+            
+            let orderId = results.insertId;
+            
+            // 用 async 去跑每一筆 detail 的 query，確保 query 有完成
+            async.each(details, (detail, innerCallback) => {
+
+                sql = "insert into details (meal_id, amount, subtotal, state, wish_id_1, wish_id_2, wish_id_3, random_pick, order_id) values" +
+                "(" + detail.meal_id + "," + detail.amount + "," + detail.subtotal + ", 1 ," + detail.wish_id_1 + "," + detail.wish_id_2 + "," + detail.wish_id_3 + "," +detail.random_pick + "," +orderId+ ");";
+
+                connection.query(sql, (err, results) => {
+                    if (err) {
+                        innerCallback(err);
+                    }
+                });
+            }, (err) => {
+                if (err) {
+                    callback({"error": "Something went wrong."}, undefined);
+                    return connection.rollback(function() {
+                        throw err;
+                    });
                 }
             });
-        }
-        callback(undefined, results);
-        return;
+            
+            /**
+             * 尚未確定要怎麼 update 使用者的金額（取最高金額嗎？）
+             */
+
+            sql = 'update users set remain = remain - ' + total + ', block = block + ' +  total + ';';
+            connection.query(sql, (err, results) => {
+                if (err) {
+                    callback({"error": "Something went wrong."}, undefined);
+                    return connection.rollback(function() {
+                        throw err;
+                    });
+                }
+
+                // console.log(results);
+
+                connection.commit(function(err) {
+                    if (err) {
+                      return connection.rollback(function() {
+                        throw err;
+                      });
+                    }
+                    
+                    callback(undefined, 'order successfully.');
+                    return;
+                });
+            });
+        });
     });
 }
 
