@@ -121,8 +121,26 @@ function storeValue(username, value, callback) {
                         throw err;
                     });
                 }
-                callback(undefined, {"success": "store successfully!"});
-                return;
+                
+                sql = 'select * from records where record_id = ' + results.insertId;
+                connection.query(sql, (err, results) => {
+                    if (err) {
+                        callback({"error": "Something went wrong."}, undefined);
+                        return connection.rollback(function() {
+                            throw err;
+                        });
+                    }
+                    connection.commit(function(err) {
+                        if (err) {
+                          return connection.rollback(function() {
+                            throw err;
+                          });
+                        }
+                        // 建立成功，回傳剛新增的這筆資料
+                        callback(undefined, {"success": "store successfully!", "record": results[0]});
+                        return;
+                    });
+                });
             });
         });
     });
