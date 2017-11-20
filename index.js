@@ -14,7 +14,8 @@ connection = mysql.createConnection({
     host     : 'localhost',
     user     : env.DBuser,
     password : env.DBpassword,
-    database : 'bento107'
+    database : 'bento107',
+    timezone: 'utc'
 });
 
 /**
