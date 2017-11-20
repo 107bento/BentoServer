@@ -124,8 +124,18 @@ function storeValue(username, value, callback) {
 }
 
 // 拿到個人的訂單資訊
-function getOrders(username, callback) {
-    let sql = 'select * from details, orders where details.order_id = orders.order_id and user_id = "' + username + '";';
+function getOrders(username, type, callback) {
+
+    let sql = '';
+    // 判斷是不是要取「全部」or「今日」
+    if (type == 'today') {
+        // 設定訂單開始的起訖時間
+        const start = moment().add(-1, 'days').format('YYYY-MM-DD 18:00:00');
+        const end = moment().format('YYYY-MM-DD 09:59:59');
+        sql = 'select * from details, orders where details.order_id = orders.order_id and user_id = "' + username + '" and (order_time <= "' + end + '" and order_time >= "' + start + '");';
+    } else {
+        sql = 'select * from details, orders where details.order_id = orders.order_id and user_id = "' + username + '";';
+    }
     shop.getMealsInfo().then((mealsInfo) => {
         connection.query(sql, (err, results) => {
             if (err) {

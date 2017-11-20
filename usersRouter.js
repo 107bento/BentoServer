@@ -113,7 +113,7 @@ usersRouter.post('/store', (req, res) => {
 
 });
 
-usersRouter.get('/orders', (req, res) => {
+usersRouter.get('/orders/:type', (req, res) => {
     const username = user.checkLogin(req.cookies);
     //檢查有沒有 cookie
     if (!username) {
@@ -122,8 +122,14 @@ usersRouter.get('/orders', (req, res) => {
             error: 'please login!'
         });
     }
+    const type = req.params.type;
+    if (type != 'all' && type != 'today') {
+        return res.status(403).json({
+            error: 'something went wrong!'
+        });
+    }
 
-    user.getOrders(username, (error, success) => {
+    user.getOrders(username, type, (error, success) => {
         if (typeof(success) !== undefined && typeof(error) == "undefined") {
             return res.status(200).json(success);
         } else {
