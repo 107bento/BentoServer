@@ -69,7 +69,7 @@ function modify (username, password, phone, email, name, callback) {
 function showUser (username, callback) {
 
     // sql指令 -> 所有user data
-    let sql = `select * from users where user_id = '${username}';`; 
+    let sql = `select user_id, name, email, phone, total, block, remain from users where user_id = '${username}';`; 
     connection.query(sql, (err, results) => {
         if (err) {
             throw err;
