@@ -57,15 +57,45 @@ function _newCart(username, orderTime, total) {
     
 }
 
+function _newDetails(details, orderId) {
+    let sql = '';
+    let count = 0;
+    return new Promise((resolve, reject) => {
+        // 用 async 去跑每一筆 detail 的 query，確保 query 有完成
+        _getMealsPrice().then((mealsPrice) => {
+            let cartTotal = 0;
+            async.each(details, (detail, callback) => {
+                // 找最高金額
+                let highestPrice = mealsPrice[detail.meal_id];
+                if (detail.wish_id_1 != 0 && highestPrice < mealsPrice[detail.wish_id_1]) {
+                    highestPrice = mealsPrice[detail.wish_id_1];
+                } else if (detail.wish_id_2 != 0 && highestPrice < mealsPrice[detail.wish_id_2]) {
+                    highestPrice = mealsPrice[detail.wish_id_2];
+                } else if (detail.wish_id_3 != 0 && highestPrice < mealsPrice[detail.wish_id_3]) {
+                    highestPrice = mealsPrice[detail.wish_id_3];
+                }
+                cartTotal += highestPrice * detail.amount;
+
+                sql = `insert into details (meal_id, amount, subtotal, state, wish_id_1, wish_id_2, wish_id_3, random_pick, order_id) values (${detail.meal_id}, ${detail.amount}, ${detail.subtotal}, 1 , ${detail.wish_id_1}, ${detail.wish_id_2}, ${detail.wish_id_3}, ${detail.random_pick}, ${orderId});`;
 
                 connection.query(sql, (err, results) => {
                     if (err) {
+                        callback(err);
+                    }
+                    count++;
+                    if (count == details.length) {
+                        resolve(cartTotal);
                     }
                 });
             }, (err) => {
                 if (err) {
+                    reject({err, "error": "Something went wrong."});
                 }
             });
+        });
+        
+    });
+}
             
 function _updateUser(username, cartTotal) {
 
