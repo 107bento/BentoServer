@@ -8,6 +8,8 @@ function newOrder (username, orderTime, total, details, callback) {
         if (err) { 
             return callback({"error": "Something went wrong."}, undefined);
         }
+        // 使用 promise 確保事情做完才做下一件事情
+        // 每個 function 回傳 promise 再丟給下一個人處理
         _newCart(username, orderTime, total).then((orderId) => {
             return _newDetails(details, orderId);
         }).then((cartTotal) => {
