@@ -110,6 +110,13 @@ function _updateUser(username, cartTotal) {
     });
 }
 
+function _commitTransactino() {
+    return new Promise((resolve, reject) => {
+        connection.commit(function(err) {
+            if (err) {
+                reject({err, "error": "Something went wrong."});
+            }
+            resolve();
         });
     });
 }
