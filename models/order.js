@@ -27,6 +27,20 @@ function newOrder (username, orderTime, total, details, callback) {
     });
 }
 
+function _checkMoney(username, cartTotal) {
+    let sql = `select remain from users where user_id = '${username}'`;
+    return new Promise((resolve, reject) => {
+        connection.query(sql, (err, results) => {
+            if (err) {
+                reject({err, "error": "Something went wrong."});
+            }
+            if (results[0].remain < cartTotal) {
+                reject({err, "error": "Sorry, you don't have enough money, please store your account."});
+            }
+            resolve(cartTotal);
+        })
+    });
+}
         connection.query(sql, (err, results) => {
             if (err) {
             }
