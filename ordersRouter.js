@@ -47,7 +47,8 @@ ordersRouter.post('/', (req, res) => {
             }); 
         } else { 
             return res.status(400).json({ 
-                error: error 
+                err: error.err,
+                error: error.error
             }); 
         } 
     }); 
