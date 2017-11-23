@@ -21,6 +21,7 @@ function newOrder (username, orderTime, total, details, callback) {
         }).then(() => {
             return callback(undefined, {"success": "Order successfully."});
         }).catch((err) => {
+            // promise 被 reject 就代表有錯誤，需要丟回來這裡處理
             // 有任何一個 error 都 rollback 回去
             connection.rollback(() => {
                 return callback(err, undefined);
