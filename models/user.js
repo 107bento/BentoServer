@@ -44,6 +44,7 @@ function register (username, password, name, phone, email, callback) {
             callback({error: 'username has been existed.'}, undefined);
             return;
         }
+        // console.log(results);
         callback(undefined, { "success" : "register successfully." } );
         return;
     });
@@ -58,6 +59,7 @@ function modify (username, password, phone, email, name, callback) {
         if (err) {
             throw err;
         }
+        console.log(results);
         callback(undefined, { "success" : "edit successfully." } );
         return;
     });
@@ -121,7 +123,7 @@ function storeValue(username, value, callback) {
                         throw err;
                     });
                 }
-                
+                console.log(results);
                 sql = 'select * from records where record_id = ' + results.insertId;
                 connection.query(sql, (err, results) => {
                     if (err) {
