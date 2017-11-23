@@ -41,9 +41,21 @@ function _checkMoney(username, cartTotal) {
         })
     });
 }
+
+function _newCart(username, orderTime, total) {
+    // sql指令 -> 新增購物車
+    let sql = `insert into orders  (user_id, order_time, total) values ('${username}', '${orderTime}', '${total}');`;
+    return new Promise((resolve, reject) => {
         connection.query(sql, (err, results) => {
             if (err) {
+                reject({err, "error": "Something went wrong."});
             }
+            console.log(results);
+            resolve(results.insertId);
+        });
+    });
+    
+}
 
 
                 connection.query(sql, (err, results) => {
