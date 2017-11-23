@@ -98,6 +98,17 @@ function _newDetails(details, orderId) {
 }
             
 function _updateUser(username, cartTotal) {
+    return new Promise((resolve, reject) => {
+        let sql = 'update users set remain = remain - ' + cartTotal + ', block = block + ' +  cartTotal + ';';
+        connection.query(sql, (err, results) => {
+            if (err) {
+                reject({err, "error": "Something went wrong."});
+            }
+            console.log(results);
+            resolve();
+        });
+    });
+}
 
         });
     });
