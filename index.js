@@ -8,6 +8,21 @@ const ordersRouter = require('./ordersRouter.js');
 const mysql = require('mysql');
 const cookieParser = require('cookie-parser');
 const env = require('./env.json');
+const CronJob = require('cron').CronJob;
+const job = new CronJob({
+  cronTime: '00 00 10 * * 1-5',
+  onTick: () => {
+    /*
+     * Runs every weekday (Monday through Friday)
+     * at 11:30:00 AM. It does not run on Saturday
+     * or Sunday.
+     */
+	console.log('hi');
+  },
+  start: false,
+  timeZone: 'Asia/Taipei'
+});
+job.start();
 
 // 跟 DB 建立連線
 connection = mysql.createConnection({
