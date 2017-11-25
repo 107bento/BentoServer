@@ -1,28 +1,35 @@
 const moment = require('moment');
 const shop = require('./shop');
+const async = require('async');
 // 登入驗證
 function validate (username, password, callback) { 
     
     // 帳密要求字串型態
     if (typeof(username) !== 'string' || typeof(password) !== 'string') { 
         let error='username and password must be string.';
-        callback(error, undefined);
+        callback(error, undefined, undefined);
         return;
     }
 
     // sql指令 -> 確認帳密
-    let sql = `select user_id from users where user_id='${username}' and password='${password}';`;  
+    let sql = `select user_id, level from users where user_id='${username}' and password='${password}';`;  
     
-    connection.query(sql, (err, results, fields) => {
+    connection.query(sql, (err, results) => {
         if (err) {
             throw err;
         }
         if (results.length <= 0) {
             let error = 'username or password is wrong.'
-            callback(error, undefined);
+            callback(error, undefined, undefined);
             return;
         }
-        callback(undefined, results[0]);
+        // 判斷是不是工讀生或是管理員
+        console.log(results);
+        let isAdmin = false;
+        if (results[0].level >= 1) {
+            isAdmin = true;
+        }
+        callback(undefined, results[0], isAdmin);
         return;
     });
 }
