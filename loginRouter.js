@@ -17,12 +17,16 @@ loginRouter.post('/', (req, res) => {
         });
     }
 
-    user.validate(username, password, (error, results) => {
+    user.validate(username, password, (error, results, isAdmin) => {
         if (typeof(results) !== undefined && typeof(error) == "undefined") {
+            // 如果是工讀生或使用者
+            if (isAdmin) {
                 // session id 加密 （username + 時間戳ㄋ）
                 let uuid = md5(results.user_id + moment());
                 _adminCookies[uuid] = results.user_id;
                 res.cookie(adminCookieName, uuid);
+                return res.status(200).json({"user_id": results.user_id,"status_code" : 200, isAdmin});
+            }
             // session id 加密 （username + 時間戳ㄋ）
             let uuid = md5(results.user_id + moment());
             //
