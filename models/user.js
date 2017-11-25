@@ -250,6 +250,85 @@ function getRecords(username, callback) {
     });
 }
 
+// admin 可以確認領餐
+function checkOrder(order_id, callback) {
+    
+    // transaction 如果有一個 error 全部 rollback
+    connection.beginTransaction((err) => {
+        if (err) { 
+            return callback({"error": "Something went wrong."}, undefined);
+        }
+        // 使用 promise 確保事情做完才做下一件事情
+        // 每個 function 回傳 promise 再丟給下一個人處理
+        _getDetails(order_id).then((data) => {
+            return _updateDetails(data);
+        }).then(() => {
+            return _commitTransactino();
+        }).then(() => {
+            callback(undefined, {"success": "Get this order."});
+        }).catch((err) => {
+            // promise 被 reject 就代表有錯誤，需要丟回來這裡處理
+            // 有任何一個 error 都 rollback 回去
+            connection.rollback(() => {
+                return callback(err, undefined);
+            });
+        });
+    });
+}
+
+function _getDetails(order_id) {
+    let sql = `select * from details where order_id = ${order_id};`;
+    return new Promise((resolve, reject) => {
+        connection.query(sql, (err, results) => {
+            if (err) {
+                reject(err, {"error": "Something went wrong."});
+            }
+            if (results.length <= 0) {
+                reject({"error": "The order is not existed."});
+            }
+            resolve(results);
+        });
+    });
+}
+
+function _updateDetails(details) {
+    return new Promise((resolve, reject) => {
+        let sql = '';
+        let count = 0;
+        async.each(details, (detail, callback) => {
+            sql = `update details set state = 3 where detail_id = ${detail.detail_id} and state = 1`;
+            connection.query(sql, (err, results) => {
+                if (err) {
+                    callback(err, {"error": "Something went wrong."});
+                }
+                console.log(detail);
+                console.log(results);
+                if (results.affectedRows == 0) {
+                    callback({error:"The order has been recieved!"});
+                }
+                count++;
+                if (count == details.length) {
+                    resolve();
+                }
+            });
+        }, (err) => {
+            reject(err);
+        });
+    
+    });
+}
+
+function _commitTransactino() {
+    return new Promise((resolve, reject) => {
+        connection.commit(function(err) {
+            if (err) {
+                reject({err, "error": "Something went wrong."});
+            }
+            resolve();
+        });
+    });
+}
+
 module.exports = {
     validate,
     register,
@@ -258,5 +337,7 @@ module.exports = {
     checkLogin,
     storeValue,
     getOrders,
-    getRecords
+    getRecords,
+    isAdmin,
+    checkOrder
 };
