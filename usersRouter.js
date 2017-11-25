@@ -157,4 +157,25 @@ usersRouter.get('/records', (req, res) => {
     });
 });
 
+// admin 確認領餐的 route GET user/admin/{order_id}
+usersRouter.get('/admin/:order_id', (req, res) => {
+    const username = user.isAdmin(req.cookies);
+    //檢查有沒有 cookie
+    if (!username) {
+        //console.log(_cookie);
+        return res.status(401).json({
+            error: 'please login!'
+        });
+    }
+
+    const order_id = req.params.order_id;
+    user.checkOrder(order_id, (error, success) => {
+        if (typeof(success) !== undefined && typeof(error) == "undefined") {
+            return res.status(200).json(success);
+        } else {
+            return res.status(400).json(error);
+        }
+    });
+});
+
 module.exports = usersRouter;
