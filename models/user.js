@@ -96,6 +96,16 @@ function checkLogin(reqCookie) {
     }
 }
 
+// 對應 admin cookie 
+function isAdmin(reqCookie) {
+    let uuid = reqCookie.BENTOSESSIONADMINID;
+    if (_adminCookies[uuid]) {
+        return _adminCookies[uuid];
+    } else {
+        return false;
+    }
+}
+
 // 儲值
 function storeValue(username, value, callback) {
     
