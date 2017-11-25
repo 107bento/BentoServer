@@ -41,6 +41,10 @@ connection = mysql.createConnection({
 cookieName = 'BENTOSESSIONID';
 _cookies = {};
 
+// 存在 client 端的 cookie name
+adminCookieName = 'BENTOSESSIONADMINID';
+_adminCookies = {};
+
 // new a express
 const app = express();
 
