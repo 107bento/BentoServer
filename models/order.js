@@ -102,7 +102,7 @@ function _newDetails(details, orderId) {
             
 function _updateUser(username, cartTotal) {
     return new Promise((resolve, reject) => {
-        let sql = 'update users set remain = remain - ' + cartTotal + ', block = block + ' +  cartTotal + ';';
+        let sql = `update users set remain = remain - ${cartTotal}, block = block + ${cartTotal} where user_id = '${username}';`;
         connection.query(sql, (err, results) => {
             if (err) {
                 reject({err, "error": "Something went wrong."});
