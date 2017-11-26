@@ -45,7 +45,7 @@ function register (username, password, name, phone, email, callback) {
     }
 
     // sql指令 -> 增加新使用者
-    let sql = `INSERT INTO users (user_id, password, phone, email, total, block, remain, name) VALUES ( '${username}' , '${password}' ,'${phone}','${email}', 0, 0, 0, '${name}');`;  
+    let sql = `INSERT INTO users (user_id, password, phone, email, total, block, remain, name, level) VALUES ( '${username}' , '${password}' ,'${phone}','${email}', 0, 0, 0, '${name}', 0);`;  
     connection.query(sql, (err, results) => {
         if (err) {
             callback({error: 'username has been existed.'}, undefined);
