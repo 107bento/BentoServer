@@ -1,6 +1,9 @@
 const express = require('express');
 const usersRouter = express.Router();
 const user = require('./models/user');
+const env = require('./env.json');
+const encrypter = require('object-encrypter');
+const engine = encrypter(env.key, {ttl: false});
 
 
 //取個人資料
@@ -157,8 +160,8 @@ usersRouter.get('/records', (req, res) => {
     });
 });
 
-// admin 確認領餐的 route GET user/admin/{order_id}
-usersRouter.get('/admin/:order_id', (req, res) => {
+// admin 確認領餐的 route POST user/admin/
+usersRouter.post('/admin', (req, res) => {
     const username = user.isAdmin(req.cookies);
     //檢查有沒有 cookie
     if (!username) {
@@ -168,8 +171,16 @@ usersRouter.get('/admin/:order_id', (req, res) => {
         });
     }
 
-    const order_id = req.params.order_id;
-    user.checkOrder(order_id, (error, success) => {
+    if (req.body.hex) {
+        data = engine.decrypt(req.body.hex);
+        console.log(data);
+    } else {
+        return res.status(404).json({
+            error: 'Something went wrong.'
+        });
+    }
+    
+    user.checkOrder(data.order_id, (error, success) => {
         if (typeof(success) !== undefined && typeof(error) == "undefined") {
             return res.status(200).json(success);
         } else {
