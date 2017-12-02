@@ -132,7 +132,7 @@ function _getShops() {
             if (err) {
                 reject(err);
             }
-            let shops = [];
+            let shops = {};
             for (let result of results) {
                 let shop_id = result.shop_id;
                 if (shops[shop_id] != null) {
@@ -173,6 +173,145 @@ function _getMealsPrice() {
             resolve(mealsPrice);
         });
     });
+}
+
+// 拿到 today details 
+function _getTodayDetails() {
+    /// 建立今天的日期
+    // 先寫死 date
+    // const date = moment().format('YYYY-MM-DD hh:mm:ss');
+    const date = '2017-12-01 00:00:00';
+    // 搜尋所有當日的訂單 by 隨機
+    const sql = 'select * from details where order_id IN(select order_id from orders where order_time > "' + date + '")';
+
+    return new Promise((resolve, reject) => {
+        connection.query(sql, (err, results) => {
+            if (err) {
+                reject(err);
+            }
+            // 每一筆訂單
+            let details = {};
+            let i = 0;
+            // 一筆一筆看訂單 (main, wish_1, wish_2)，把 results 寫進去 details
+            for (let result of results) {
+                // 設定要儲存訂單內容
+                let detail_id = result.detail_id;
+                let subTotal = result.subtotal;
+                let amount = result.amount;
+                let randomPick = result.random_pick != 0? true: false;
+                let main = result.meal_id;
+                let mainShop = null;
+                let first = result.wish_id_1;
+                let firstShop = null;
+                let second = result.wish_id_2;
+                let secondShop = null;
+                let third = result.wish_id_3;
+                let thirdShop = null;
+                let final = result.final_meal;
+                let state = result.state;
+
+                details[i++] = {detail_id, subTotal, amount, randomPick, main, mainShop, first, firstShop, second, secondShop, third, thirdShop, final, state};
+            }
+            details.length = results.length;
+            resolve(details);
+        });
+    }) 
+}
+
+// 結算訂單的起點
+function setOrders() {
+    // 先拿到所有店家與餐點的金額表再開始排序
+    Promise.all([_getShops(), _getMealsPrice(), _getTodayDetails()]).then((data) => {
+        const shops = data[0];
+        const mealsPrice = data[1];
+        const details = data[2];
+        for (let detailKey in details) {
+            for (let shopKey in shops) {
+                if (shops[shopKey].meals.indexOf(details[detailKey].main) != -1) {
+                    details[detailKey].mainShop = shops[shopKey].shop_id;
+                }
+                if (shops[shopKey].meals.indexOf(details[detailKey].first) != -1) {
+                    details[detailKey].firstShop = shops[shopKey].shop_id;
+                }
+                if (shops[shopKey].meals.indexOf(details[detailKey].second) != -1) {
+                    details[detailKey].secondShop = shops[shopKey].shop_id;
+                }
+                if (shops[shopKey].meals.indexOf(details[detailKey].third) != -1) {
+                    details[detailKey].thirdShop = shops[shopKey].shop_id;
+                }
+            }
+        }
+        // console.log(details);
+        _sortOrders(shops, mealsPrice, details, 0);
+    }).catch((error) => {
+        throw error;
+    });
+}
+
+// 排單演算法
+bestShops = {};
+maxScore = 0;
+function _sortOrders(shops, mealsPrice, details, at) {
+    // 如果全部處理完，把所有店家分數加起來
+    if (at == details.length) {
+        let totalScore = 0;
+        for(let shopKey in shops) {
+            if (shops[shopKey].current_amount >= shops[shopKey].lowest_amount) {
+                totalScore += shops[shopKey].score;
+            }
+        }
+        // 如果有大於最高分，把目前店家存起來
+        if (totalScore > maxScore) {
+            maxScore = totalScore;
+            bestShops = shops;
+            console.log(maxScore);
+            for (let shopKey in bestShops) {
+                console.log(bestShops[shopKey].details);
+            }
+        }
+        return ;
+    }
+
+    let main = details[at].mainShop;
+    if (shops[main].current_amount + details[at].amount <= shops[main].highest_amount) {
+        shops[main].score += 3;
+        shops[main].details.push(details[at].detail_id);
+        shops[main].current_amount += details[at].amount;
+        _sortOrders(shops, mealsPrice, details, at+1);
+        shops[main].score -= 3;
+        shops[main].details.pop();
+        shops[main].current_amount -= details[at].amount;
+    }
+    
+    if (details[at].firstShop) {
+        let first = details[at].firstShop;
+        if (shops[first].current_amount + details[at].amount <= shops[first].highest_amount) {
+            shops[first].score += 2;
+            shops[first].details.push(details[at].detail_id);
+            shops[first].current_amount += details[at].amount;
+            _sortOrders(shops, mealsPrice, details, at+1);
+            shops[first].score -= 2;
+            shops[first].details.pop();
+            shops[first].current_amount -= details[at].amount;
+        }
+    } else {
+        _sortOrders(shops, mealsPrice, details, at+1);
+    }
+    
+    if (details[at].secondShop) {
+        let second = details[at].secondShop;
+        if (shops[second].current_amount + details[at].amount <= shops[second].highest_amount) {
+            shops[second].score += 1;
+            shops[second].details.push(details[at].detail_id);
+            shops[second].current_amount += details[at].amount;
+            _sortOrders(shops, mealsPrice, details, at+1);
+            shops[second].score -= 1;
+            shops[second].details.pop();
+            shops[second].current_amount -= details[at].amount;
+        }
+    } else {
+        _sortOrders(shops, mealsPrice, details, at+1);
+    }
 }
 
 module.exports = {
