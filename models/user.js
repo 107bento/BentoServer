@@ -172,9 +172,16 @@ function getOrders(username, type, callback) {
     // 判斷是不是要取「全部」or「今日」
     if (type == 'today') {
         // 設定訂單開始的起訖時間
-        const start = moment().add(-1, 'days').format('YYYY-MM-DD 18:00:00');
-        const end = moment().format('YYYY-MM-DD 09:59:59');
+        const now = moment();
+        let start = moment().add(-1, 'days').format('YYYY-MM-DD 18:00:00');
+        let end = moment().format('YYYY-MM-DD 10:00:00');
         sql = 'select * from details, orders where details.order_id = orders.order_id and user_id = "' + username + '" and (order_time <= "' + end + '" and order_time >= "' + start + '");';
+        if (now > moment().format('YYYY-MM-DD 18:00:00')) {
+            start = moment().format('YYYY-MM-DD 18:00:00');
+            end = moment().format('YYYY-MM-DD 23:59:59');
+        }
+        sql = 'select * from details, orders where details.order_id = orders.order_id and user_id = "' + username + '" and (order_time <= "' + end + '" and order_time >= "' + start + '");';
+        
     } else {
         sql = 'select * from details, orders where details.order_id = orders.order_id and user_id = "' + username + '";';
     }
