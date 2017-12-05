@@ -176,16 +176,16 @@ function getOrders(username, type, callback) {
         const now = moment().format('YYYY-MM-DD HH:mm:ss');
         let start = moment().add(-1, 'days').format('YYYY-MM-DD 18:00:00');
         let end = moment().format('YYYY-MM-DD 10:00:00');
-        sql = 'select * from details, orders where details.order_id = orders.order_id and user_id = "' + username + '" and (order_time <= "' + end + '" and order_time >= "' + start + '");';
+        sql = 'select * from details, orders where details.order_id = orders.order_id and user_id = "' + username + '" and (order_time <= "' + end + '" and order_time >= "' + start + '") order by orders.order_id desc;';
         
         if (now > moment().format('YYYY-MM-DD 18:00:00')) {
             start = moment().format('YYYY-MM-DD 18:00:00');
             end = moment().format('YYYY-MM-DD 23:59:59');
         }
-        sql = 'select * from details, orders where details.order_id = orders.order_id and user_id = "' + username + '" and (order_time <= "' + end + '" and order_time >= "' + start + '");';
+        sql = 'select * from details, orders where details.order_id = orders.order_id and user_id = "' + username + '" and (order_time <= "' + end + '" and order_time >= "' + start + '") order by orders.order_id desc;';
         
     } else {
-        sql = 'select * from details, orders where details.order_id = orders.order_id and user_id = "' + username + '";';
+        sql = 'select * from details, orders where details.order_id = orders.order_id and user_id = "' + username + '" order by orders.order_id desc;';
     }
     shop.getMealsInfo().then((mealsInfo) => {
         connection.query(sql, (err, results) => {
@@ -196,6 +196,7 @@ function getOrders(username, type, callback) {
 
             let tmp = [];
             for (let result of results) {
+                // console.log(result);
                 let detail = {
                     "detail_id": result.detail_id,
                     "amount": result.amount,
@@ -224,12 +225,11 @@ function getOrders(username, type, callback) {
                     }
                 }
             }
-
             let orders = [];
             for (let orderKey in tmp) {
                 orders.push(tmp[orderKey]);
             }
-
+            // console.log(orders);
             return callback(undefined, orders);
         });
     }).catch((error) => {
@@ -239,7 +239,7 @@ function getOrders(username, type, callback) {
 
 // 拿到個人金錢紀錄
 function getRecords(username, callback) {
-    let sql = 'select * from records where user_id = "' + username + '";';
+    let sql = 'select * from records where user_id = "' + username + '" order by record_id desc;';
     connection.query(sql, (err, results) => {
         if (err) {
             throw err;
