@@ -227,7 +227,7 @@ function getOrders(username, type, callback) {
             }
             let orders = [];
             for (let orderKey in tmp) {
-                orders.push(tmp[orderKey]);
+                orders.unshift(tmp[orderKey]);
             }
             // console.log(orders);
             return callback(undefined, orders);
