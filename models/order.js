@@ -314,6 +314,84 @@ function _sortOrders(shops, mealsPrice, details, at) {
     }
 }
 
+function greedy() {
+    Promise.all([_getShops(), _getMealsPrice(), _getTodayDetails()]).then((data) => {
+        const shops = data[0];
+        const mealsPrice = data[1];
+        const details = data[2];
+        // 1.計算接受度
+        // 全部訂單取出來
+        for (let detailKey in details) {
+            details[detailKey].wishNumber = 0;
+            // 如果接受隨機
+            // 所有店家 score++, 放 detail
+            if (shops[shopKey].randomPick) {
+                wishNumber = Object.keys(shops).length-1;
+                for (let shopKey in shops) {
+                    shops[shopKey].score += wishNumber;
+                    shops[shopKey].current_amount += details[detailKey].amount;
+                    shops[shopKey].details.push(detail);
+                }
+            } else { // 無隨機者
+                // 紀錄餐點對應店家 && 志願序個數
+                for (let shopKey in shops) {
+                    if (shops[shopKey].meals.indexOf(details[detailKey].main) != -1) {
+                        details[detailKey].mainShop = shops[shopKey].shop_id;
+                    }
+                    if (shops[shopKey].meals.indexOf(details[detailKey].first) != -1) {
+                        details[detailKey].firstShop = shops[shopKey].shop_id;
+                        wishNumber++;
+                    }
+                    if (shops[shopKey].meals.indexOf(details[detailKey].second) != -1) {
+                        details[detailKey].secondShop = shops[shopKey].shop_id;
+                        wishNumber++;
+                    }
+                    if (shops[shopKey].meals.indexOf(details[detailKey].third) != -1) {
+                        details[detailKey].thirdShop = shops[shopKey].shop_id;
+                        wishNumber++;
+                    }
+                }
+                // 將訂單放入 " 該訂單可接受的店家 "
+                shops[mainShop].details.push(detail);
+                shops[mainShop].amount += detail.amount;
+                shops[mainShop].score += wishNumber;
+                if (first != 0) {
+                    shops[firstShop].score += wishNumber;
+                    shops[firstShop].details.push(detail);
+                    shops[firstShop].amount += detail.amount;
+                    if (second != 0) {
+                        shops[secondShop].score += wishNumber;
+                        shops[secondShop].details.push(detail);
+                        shops[secondShop].amount += detail.amount;
+                        if (third != 0) {
+                            shops[thirdShop].score += wishNumber;
+                            shops[thirdShop].details.push(detail);
+                            shops[thirdShop].amount += detail.amount;
+                        }
+                    }    
+                }
+            }
+        }
+        /* 目前的進度
+        // 2. 事前準備
+        // 篩選掉不可能店家，數量歸 0，最後名單
+        // 店家依互斥度排序 
+        // 店家裡的訂單_id 依志願序數量排序
+        for (let shopKey in shops) {
+            // 如果數量小於 lowest
+            if (shops[shopKey].current_amount< shops[shopKey].lowest) {
+                delete shops.shopKey;
+                continue;
+            }
+            shops[shopKey].current_amount = 0;
+            shops[shopKey].finalList = [];
+        }
+        */
+    }).catch((error) => {
+        throw error;
+    });
+
+
 module.exports = {
     newOrder,
     setOrders
