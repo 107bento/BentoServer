@@ -353,44 +353,83 @@ function greedy() {
                 }
                 // 將訂單放入 " 該訂單可接受的店家 "
                 shops[mainShop].details.push(detail);
-                shops[mainShop].amount += detail.amount;
+                shops[mainShop].current_amount += detail.amount;
                 shops[mainShop].score += wishNumber;
                 if (first != 0) {
                     shops[firstShop].score += wishNumber;
                     shops[firstShop].details.push(detail);
-                    shops[firstShop].amount += detail.amount;
+                    shops[firstShop].current_amount += detail.amount;
                     if (second != 0) {
                         shops[secondShop].score += wishNumber;
                         shops[secondShop].details.push(detail);
-                        shops[secondShop].amount += detail.amount;
+                        shops[secondShop].current_amount += detail.amount;
                         if (third != 0) {
                             shops[thirdShop].score += wishNumber;
                             shops[thirdShop].details.push(detail);
-                            shops[thirdShop].amount += detail.amount;
+                            shops[thirdShop].current_amount += detail.amount;
                         }
                     }    
                 }
             }
         }
-        /* 目前的進度
+         目前的進度
         // 2. 事前準備
-        // 篩選掉不可能店家，數量歸 0，最後名單
-        // 店家依互斥度排序 
-        // 店家裡的訂單_id 依志願序數量排序
         for (let shopKey in shops) {
-            // 如果數量小於 lowest
-            if (shops[shopKey].current_amount< shops[shopKey].lowest) {
+            // 如果數量小於 lowest, 篩選掉不可能店家
+            if (shops[shopKey].current_amount< shops[shopKey].lowest_amount) {
                 delete shops.shopKey;
                 continue;
             }
+            // 數量歸 0，new 最後名單
+            // 店家裡的 details 依志願序數量排序
             shops[shopKey].current_amount = 0;
             shops[shopKey].finalList = [];
+            shops[shopKey].details.sort(function(a, b){return details[a].wishNumber-details[b].wishNumber});
         }
-        */
+        // 店家依互斥度排序 
+        // keysSorted 為一個 object 裡面是店家互斥度排序的結果
+        keysSorted = Object.keys(shops).sort(function(a,b){return shops[a].score-shops[b].score});
+
+        // 3. 開始排單
+        // first round 通通達低標就換下一家
+        for (let key in keysort) {
+            let shopid = keysort[key];
+            for (let detail in shop[shopid].details) {
+                let detailid = shop[shopid].details[detail];
+                // 如果該 detail 還沒決定 && 加進去不會爆單
+                // add 進該店家，然後改狀態
+                if (details[detailid].state == 1 && shop[shopid].current_amount + details[detailid].amount <= shop[shopid].highest_amount) {
+                    shop[shopid].current_amount += details[detailid].amount;
+                    shop[shopid].finalList.push(detailid);
+                    details[detailid].state = 2 ; 
+                    if(shop[shopid].current_amount >= shop[shopid].lowest_amount) {
+                        break;
+                    }
+                }
+            }
+        }
+        // second round 把剩餘的都排一排
+        for (let key in keysort) {
+            let shopid = keysort[key];
+            for (let detail in shop[keysort[key]].details) {
+                let detailid = shop[shopid].details[detail];
+                if (details[detailid].state == 1 && shop[shopid].current_amount + details[detailid].amount <= shop[shopid].highest_amount) {
+                    shop[shopid].current_amount += details[detailid].amount;
+                    shop[shopid].finalList.push(detailid);
+                    details[detailid].state = 2 ; 
+                    if(shop[shopid].current_amount == shop[shopid].highest_amount) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        // 4. 最後一步把剩下 state 還是 = 1 的單變成流單
+        // 未完成
     }).catch((error) => {
         throw error;
     });
-
+}
 
 module.exports = {
     newOrder,
