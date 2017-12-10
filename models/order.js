@@ -213,6 +213,7 @@ function _getTodayDetails() {
                 details[i++] = {detail_id, subTotal, amount, randomPick, main, mainShop, first, firstShop, second, secondShop, third, thirdShop, final, state};
             }
             details.length = results.length;
+            // console.log(details);
             resolve(details);
         });
     }) 
@@ -321,11 +322,15 @@ function greedy() {
         const details = data[2];
         // 1.計算接受度
         // 全部訂單取出來
+        // console.log(details);
         for (let detailKey in details) {
-            details[detailKey].wishNumber = 0;
+            if (detailKey == 'length') {
+                break;
+            }
+            let wishNumber = 0;
             // 如果接受隨機
             // 所有店家 score++, 放 detail
-            if (shops[shopKey].randomPick) {
+            if (details[detailKey].randomPick) {
                 wishNumber = Object.keys(shops).length-1;
                 for (let shopKey in shops) {
                     shops[shopKey].score += wishNumber;
@@ -352,30 +357,45 @@ function greedy() {
                     }
                 }
                 // 將訂單放入 " 該訂單可接受的店家 "
-                shops[mainShop].details.push(detail);
-                shops[mainShop].current_amount += detail.amount;
+                let mainShop = details[detailKey].mainShop;
+                shops[mainShop].details.push(detailKey);
+                shops[mainShop].current_amount += details[detailKey].amount;
                 shops[mainShop].score += wishNumber;
-                if (first != 0) {
+                // console.log(shops[mainShop].details);
+
+                if (details[detailKey].first != 0) {
+                    let firstShop = details[detailKey].firstShop;
+                    // console.log(shops[firstShop].details);
                     shops[firstShop].score += wishNumber;
-                    shops[firstShop].details.push(detail);
-                    shops[firstShop].current_amount += detail.amount;
-                    if (second != 0) {
+                    shops[firstShop].details.push(detailKey);
+                    shops[firstShop].current_amount += details[detailKey].amount;
+                    
+                    if (details[detailKey].second != 0) {
+                        let secondShop = details[detailKey].secondShop;
+                        // console.log(shops[secondShop].details);
                         shops[secondShop].score += wishNumber;
-                        shops[secondShop].details.push(detail);
-                        shops[secondShop].current_amount += detail.amount;
-                        if (third != 0) {
+                        shops[secondShop].details.push(detailKey);
+                        shops[secondShop].current_amount += details[detailKey].amount;
+
+                        if (details[detailKey].third != 0) {
+                            let thirdShop = details[detailKey].thirdShop;
+                            // console.log(shops[thirdShop].details);
                             shops[thirdShop].score += wishNumber;
-                            shops[thirdShop].details.push(detail);
-                            shops[thirdShop].current_amount += detail.amount;
+                            shops[thirdShop].details.push(detailKey);
+                            shops[thirdShop].current_amount += details[detailKey].amount;
                         }
                     }    
                 }
+                
             }
+            details[detailKey].wishNumber = wishNumber;
+            // console.log(details[detailKey]);
         }
-         目前的進度
+        // console.log("te");
         // 2. 事前準備
         for (let shopKey in shops) {
             // 如果數量小於 lowest, 篩選掉不可能店家
+            // console.log(shops[shopKey].details);
             if (shops[shopKey].current_amount< shops[shopKey].lowest_amount) {
                 delete shops.shopKey;
                 continue;
@@ -384,48 +404,64 @@ function greedy() {
             // 店家裡的 details 依志願序數量排序
             shops[shopKey].current_amount = 0;
             shops[shopKey].finalList = [];
-            shops[shopKey].details.sort(function(a, b){return details[a].wishNumber-details[b].wishNumber});
+            // console.log("OK");
+            if (shops[shopKey].details.length > 1){
+                // console.log(shops[shopKey].details);
+                // for (let detail of shops[shopKey].details) {
+                //     console.log(details[detail]);
+                // }
+                shops[shopKey].details.sort(function(a, b){console.log(a);console.log(b);return details[a].wishNumber-details[b].wishNumber});
+                console.log(shops[shopKey].details);
+            }
+            // console.log("OK");
         }
         // 店家依互斥度排序 
         // keysSorted 為一個 object 裡面是店家互斥度排序的結果
-        keysSorted = Object.keys(shops).sort(function(a,b){return shops[a].score-shops[b].score});
+        shopSorted = Object.keys(shops).sort(function(a,b){return shops[a].score-shops[b].score});
 
         // 3. 開始排單
         // first round 通通達低標就換下一家
-        for (let key in keysort) {
-            let shopid = keysort[key];
-            for (let detail in shop[shopid].details) {
-                let detailid = shop[shopid].details[detail];
+        for (let key in shopSorted) {
+            let shopid = shopSorted[key];
+            for (let detail in shops[shopid].details) {
+                let detailid = shops[shopid].details[detail];
                 // 如果該 detail 還沒決定 && 加進去不會爆單
                 // add 進該店家，然後改狀態
-                if (details[detailid].state == 1 && shop[shopid].current_amount + details[detailid].amount <= shop[shopid].highest_amount) {
-                    shop[shopid].current_amount += details[detailid].amount;
-                    shop[shopid].finalList.push(detailid);
+                if (details[detailid].state == 1 && shops[shopid].current_amount + details[detailid].amount <= shops[shopid].highest_amount) {
+                    shops[shopid].current_amount += details[detailid].amount;
+                    shops[shopid].finalList.push(detailid);
                     details[detailid].state = 2 ; 
-                    if(shop[shopid].current_amount >= shop[shopid].lowest_amount) {
+                    if(shops[shopid].current_amount >= shops[shopid].lowest_amount) {
                         break;
                     }
                 }
             }
         }
         // second round 把剩餘的都排一排
-        for (let key in keysort) {
-            let shopid = keysort[key];
-            for (let detail in shop[keysort[key]].details) {
-                let detailid = shop[shopid].details[detail];
-                if (details[detailid].state == 1 && shop[shopid].current_amount + details[detailid].amount <= shop[shopid].highest_amount) {
-                    shop[shopid].current_amount += details[detailid].amount;
-                    shop[shopid].finalList.push(detailid);
+        for (let key in shopSorted) {
+            let shopid = shopSorted[key];
+            for (let detail in shops[shopid].details) {
+                let detailid = shops[shopid].details[detail];
+                if (details[detailid].state == 1 && shops[shopid].current_amount + details[detailid].amount <= shops[shopid].highest_amount) {
+                    shops[shopid].current_amount += details[detailid].amount;
+                    shops[shopid].finalList.push(detailid);
                     details[detailid].state = 2 ; 
-                    if(shop[shopid].current_amount == shop[shopid].highest_amount) {
+                    if(shops[shopid].current_amount == shops[shopid].highest_amount) {
                         break;
                     }
                 }
             }
         }
 
+        // 目前的進度
         // 4. 最後一步把剩下 state 還是 = 1 的單變成流單
-        // 未完成
+        for (let detailKey in details) {
+            if (details[detailKey].state == 1) {
+                details[detailKey].state = 4;
+            }
+        }
+        console.log(shops);
+        console.log(details);
     }).catch((error) => {
         throw error;
     });
@@ -433,5 +469,6 @@ function greedy() {
 
 module.exports = {
     newOrder,
-    setOrders
+    setOrders,
+    greedy
 };
