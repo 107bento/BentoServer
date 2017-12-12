@@ -167,7 +167,7 @@ usersRouter.post('/admin', (req, res) => {
     if (!username) {
         //console.log(_cookie);
         return res.status(401).json({
-            error: 'please login!'
+            error: 'Admin only!'
         });
     }
 
@@ -180,13 +180,13 @@ usersRouter.post('/admin', (req, res) => {
         });
     }
     
-    user.checkOrder(data.order_id, (error, success) => {
-        if (typeof(success) !== undefined && typeof(error) == "undefined") {
-            return res.status(200).json(success);
-        } else {
-            return res.status(400).json(error);
-        }
-    });
+    // user.checkOrder(data.order_id, (error, success) => {
+    //     if (typeof(success) !== undefined && typeof(error) == "undefined") {
+    //         return res.status(200).json(success);
+    //     } else {
+    //         return res.status(400).json(error);
+    //     }
+    // });
 });
 
 module.exports = usersRouter;

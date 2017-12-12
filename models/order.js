@@ -1,4 +1,5 @@
 const moment = require('moment');
+const shop = require('./shop');
 const async = require('async');
 // 新增訂單
 function newOrder (username, orderTime, total, details, callback) {
@@ -467,8 +468,123 @@ function greedy() {
     });
 }
 
+// 拿到某一筆 order 的 details (要秀出的是 final)
+function getOrderByAdmin(order_id, callback) {
+
+    shop.getMealsInfo().then((mealsInfo) => {
+        let sql = `select * from details where order_id = ${order_id};`;
+        connection.query(sql, (err, results) => {
+            if (err) {
+                return callback({err, error: "something went wrong!"}, undefined);
+            }
+            let details = [];
+            for (let result of results) {
+                // console.log(result);
+                let detail = {
+                    "detail_id": result.detail_id,
+                    "amount": result.amount,
+                    "subtotal": result.subtotal,
+                    "state": result.state,
+                    "meal": result.meal_id != 0 ? mealsInfo[result.meal_id] : null,
+                    "wish_1": result.wish_id_1 != 0 ? mealsInfo[result.wish_id_1] : null,
+                    "wish_2": result.wish_id_2 != 0 ? mealsInfo[result.wish_id_2] : null,
+                    "wish_3": result.wish_id_3 != 0 ? mealsInfo[result.wish_id_3] : null,
+                    "random_pick": result.random_pick != 0 ? true : false,
+                    "final_meal": result.final_meal != null ? mealsInfo[result.final_meal] : null,
+                }
+                details.push(detail);
+            }
+            // console.log(details);
+            return callback(undefined, {order_id: order_id ,details});
+        });
+    }).catch((error) => {
+        throw error;
+    });
+}
+
+// admin 可以確認領餐
+function checkOrderByAdmin(order_id, callback) {
+    
+    // transaction 如果有一個 error 全部 rollback
+    connection.beginTransaction((err) => {
+        if (err) { 
+            return callback({"error": "Something went wrong."}, undefined);
+        }
+        // 使用 promise 確保事情做完才做下一件事情
+        // 每個 function 回傳 promise 再丟給下一個人處理
+        _getDetails(order_id).then((data) => {
+            return _updateDetails(data);
+        }).then(() => {
+            return _commitTransactino();
+        }).then(() => {
+            callback(undefined, {"success": "Get this order."});
+        }).catch((err) => {
+            // promise 被 reject 就代表有錯誤，需要丟回來這裡處理
+            // 有任何一個 error 都 rollback 回去
+            connection.rollback(() => {
+                return callback(err, undefined);
+            });
+        });
+    });
+}
+
+function _getDetails(order_id) {
+    let sql = `select * from details where order_id = ${order_id};`;
+    return new Promise((resolve, reject) => {
+        connection.query(sql, (err, results) => {
+            if (err) {
+                reject(err, {"error": "Something went wrong."});
+            }
+            if (results.length <= 0) {
+                reject({"error": "The order is not existed."});
+            }
+            resolve(results);
+        });
+    });
+}
+
+function _updateDetails(details) {
+    return new Promise((resolve, reject) => {
+        let sql = '';
+        let count = 0;
+        async.each(details, (detail, callback) => {
+            sql = `update details set state = 3 where detail_id = ${detail.detail_id} and state = 1`;
+            connection.query(sql, (err, results) => {
+                if (err) {
+                    callback(err, {"error": "Something went wrong."});
+                }
+                console.log(detail);
+                console.log(results);
+                if (results.affectedRows == 0) {
+                    callback({error:"The order has been recieved!"});
+                }
+                count++;
+                if (count == details.length) {
+                    resolve();
+                }
+            });
+        }, (err) => {
+            reject(err);
+        });
+    
+    });
+}
+
+function _commitTransactino() {
+    return new Promise((resolve, reject) => {
+        connection.commit(function(err) {
+            if (err) {
+                reject({err, "error": "Something went wrong."});
+            }
+            resolve();
+        });
+    });
+}
+
 module.exports = {
     newOrder,
     setOrders,
-    greedy
+    greedy,
+    getOrderByAdmin,
+    checkOrderByAdmin
 };
