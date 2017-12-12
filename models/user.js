@@ -174,14 +174,18 @@ function getOrders(username, type, callback) {
         // 設定訂單開始的起訖時間
         
         const now = moment().format('YYYY-MM-DD HH:mm:ss');
-        let start = moment().add(-1, 'days').format('YYYY-MM-DD 18:00:00');
-        let end = moment().format('YYYY-MM-DD 10:00:00');
-        sql = 'select * from details, orders where details.order_id = orders.order_id and user_id = "' + username + '" and (order_time <= "' + end + '" and order_time >= "' + start + '") order by orders.order_id desc;';
+        // let start = moment().add(-1, 'days').format('YYYY-MM-DD 18:00:00');
+        // let end = moment().format('YYYY-MM-DD 10:00:00');
+        // sql = 'select * from details, orders where details.order_id = orders.order_id and user_id = "' + username + '" and (order_time <= "' + end + '" and order_time >= "' + start + '") order by orders.order_id desc;';
         
-        if (now > moment().format('YYYY-MM-DD 18:00:00')) {
-            start = moment().format('YYYY-MM-DD 18:00:00');
-            end = moment().format('YYYY-MM-DD 23:59:59');
-        }
+        // if (now > moment().format('YYYY-MM-DD 18:00:00')) {
+        //     start = moment().format('YYYY-MM-DD 18:00:00');
+        //     end = moment().format('YYYY-MM-DD 23:59:59');
+        // }
+
+        // 專題 demo 用
+        let start = moment().format('YYYY-MM-DD 00:00:00');
+        let end = moment().format('YYYY-MM-DD 23:59:59');
         sql = 'select * from details, orders where details.order_id = orders.order_id and user_id = "' + username + '" and (order_time <= "' + end + '" and order_time >= "' + start + '") order by orders.order_id desc;';
         
     } else {
