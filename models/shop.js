@@ -184,11 +184,58 @@ function getMealsInfo() {
     });
 }
 
+function patchShop(shopInfo, username, callback) {
+    // transaction 如果有一個 error 全部 rollback
+    connection.beginTransaction((err) => {
+        if (err) { 
+            return callback({"error": "Something went wrong."}, undefined);
+        }
+        // 使用 promise 確保事情做完才做下一件事情
+        // 每個 function 回傳 promise 再丟給下一個人處理
+        _patchShopInfo(shopInfo, username).then(() => {
+            return _patchShopMeals(shopInfo.meals, username);
+        }).then(() => {
+            return callback(undefined, {"success": "Patch successfully."});
+        }).catch((err) => {
+            // promise 被 reject 就代表有錯誤，需要丟回來這裡處理
+            // 有任何一個 error 都 rollback 回去
+            connection.rollback(() => {
+                return callback(err, undefined);
+            });
+        });
+    });
+}
+
+function _patchShopInfo(info, username) {
+    return new Promise((resolve, reject) => {
+        delete info.meals;
+        let infoArray = [];
+        for (let data of info) {
+            infoArray.push(data);
+        }
+        const sql = ``;
+        connection.query(`UPDATE shops SET shop_name = ?, shop_time = ?, shop_phone = ?, shop_address = ?, lowest_amount = ?, highest_amount = ?, shipping_fee = ?, payment = ?, settlement = ?, shop_discount = ?, password = ? WHERE username = ${username}`, infoArray, function (error, results, fields) {
+            if (error) {
+                reject(error);
+            }
+            resolve();
+        });
+    });
+}
+
+function _patchShopMeals(meals, username) {
+    // 還沒更新店家訂單
+    // 要記得用 async for 參考 patch 訂單
+}
 module.exports = {
     showShops,
     onlyshowShop,
     onlyshowMeal,
-    getMealsInfo
+    getMealsInfo,
+    validate,
+    checkLogin,
+    getShop,
+    patchShop
 };
 
 
