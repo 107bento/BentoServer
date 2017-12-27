@@ -83,4 +83,49 @@ shopsRouter.get('/:id/info', (req, res) => {
     });
 });
 
+// 拿店家某資訊
+shopsRouter.patch('/:id/info', (req, res) => {
+    // 判斷有沒有登入
+    let username = shop.checkLogin(req.cookies);
+    if (!username) {
+        return res.status(401).json({
+            error: 'please login!'
+        });
+    }
+    // 拿到網址變數
+    let id = req.params.id;
+    // 判斷是不是 'me'
+    if (id == 'me') {
+        id = username;
+    }
+    // 判斷資料齊不齊全
+    const data = [
+        'shop_name', 'shop_time', 'shop_phone', 'shop_address', 'lowest_amount', 'highest_amount', 'shipping_fee', 'payment', 'settlement', 'shop_discount', 'meals', 'password'
+    ]
+    const info = {}; 
+    let miss = "";
+    for (let d of data) {
+        if (!req.body.hasOwnProperty(d)) {
+            miss += `${d}, `;
+        }
+        info[`${d}`] = req.body[`${d}`];
+    }
+    if (miss != "") {
+        miss += `is missing`;
+        return res.status(400).json({
+            error: miss
+        });
+    }
+    // console.log(info);
+    // call patch function
+    shop.patchShop(info, id, (error, results) => {
+        if (typeof(results) !== undefined && typeof(error) == "undefined") {
+            return res.status(200).json(results);
+        } else {
+            return res.status(400).json({
+                error: error
+            });
+        }
+    });
+});
 module.exports = shopsRouter;
