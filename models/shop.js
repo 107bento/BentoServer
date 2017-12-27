@@ -27,6 +27,16 @@ function validate (username, password, callback) {
     });
 }
 
+// 對應 shopCookie 
+function checkLogin(reqCookie) {
+    let uuid = reqCookie.BENTOSESSIONSHOPID;
+    if (_shopCookies[uuid]) {
+        return _shopCookies[uuid];
+    } else {
+        return false;
+    }
+}
+
 // 全部店家 & 菜單
 function showShops (callback) {
     // sql指令 -> 所有shop data
