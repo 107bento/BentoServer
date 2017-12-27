@@ -57,4 +57,30 @@ shopsRouter.get('/:id', (req, res) => {
     }
 });
 
+// 拿某店家資訊
+shopsRouter.get('/:id/info', (req, res) => {
+    // 判斷有沒有登入
+    let username = shop.checkLogin(req.cookies);
+    if (!username) {
+        return res.status(401).json({
+            error: 'please login!'
+        });
+    }
+    // 拿到網址變數
+    let id = req.params.id;
+    // 判斷是不是 'me'
+    if (id == 'me') {
+        id = username;
+    }
+    shop.getShop(id, (error, results) => {
+        if (typeof(results) !== undefined && typeof(error) == "undefined") {
+            return res.status(200).json(results);
+        } else {
+            return res.status(400).json({
+                error: error
+            });
+        }
+    });
+});
+
 module.exports = shopsRouter;
