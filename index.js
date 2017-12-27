@@ -45,6 +45,10 @@ _cookies = {};
 adminCookieName = 'BENTOSESSIONADMINID';
 _adminCookies = {};
 
+// 存在 client 端的 cookie name
+shopCookieName = 'BENTOSESSIONSHOPID';
+_shopCookies = {};
+
 // new a express
 const app = express();
 
