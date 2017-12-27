@@ -184,6 +184,41 @@ function getMealsInfo() {
     });
 }
 
+// 拿到某店家資訊
+function getShop(id, callback) {
+    const sql = `select * from shops, meals where username = '${id}' and meals.shop_id = shops.shop_id;`;
+    connection.query(sql, (err, results) => {
+        if (err) {
+            callback(err, undefined);
+            return;
+        }
+        let shopInfo = {};
+        shopInfo.shop_id = results[0].shop_id;
+        shopInfo.shop_name = results[0].shop_name;
+        shopInfo.shop_time = results[0].shop_time;
+        shopInfo.shop_phone = results[0].shop_phone;
+        shopInfo.shop_address = results[0].shop_address;
+        shopInfo.lowest_amount = results[0].lowest_amount;
+        shopInfo.highest_amount = results[0].highest_amount;
+        shopInfo.shipping_fee = results[0].shipping_fee;
+        shopInfo.payment = results[0].payment;
+        shopInfo.settlement = results[0].settlement;
+        shopInfo.shop_discount = results[0].shop_discount;
+        shopInfo.password = results[0].password;
+        shopInfo.username = results[0].username;
+        shopInfo.meals = [];
+        for (let result of results) {
+            shopInfo.meals.push({
+                "meal_id": result.meal_id,
+                "meal_name": result.meal_name,
+                "meal_price": result.meal_price
+            });
+        }
+        callback(undefined, shopInfo);
+        return;
+    });
+}
+
 function patchShop(shopInfo, username, callback) {
     // transaction 如果有一個 error 全部 rollback
     connection.beginTransaction((err) => {
