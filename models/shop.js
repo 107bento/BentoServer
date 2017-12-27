@@ -1,4 +1,32 @@
 const moment = require('moment');
+// 登入驗證
+function validate (username, password, callback) { 
+    // 帳密要求字串型態
+    if (typeof(username) !== 'string' || typeof(password) !== 'string') { 
+        let error='username and password must be string.';
+        callback(error, undefined);
+        return;
+    }
+
+    // sql指令 -> 確認帳密
+    let sql = `select * from shops where username='${username}' and password='${password}';`;  
+    
+    connection.query(sql, (err, results) => {
+        if (err) {
+            throw err;
+        }
+        if (results.length <= 0) {
+            let error = 'username or password is wrong.'
+            callback(error, undefined);
+            return;
+        }
+        // console.log(results);
+        delete results[0].password;
+        callback(undefined, results[0]);
+        return;
+    });
+}
+
 // 全部店家 & 菜單
 function showShops (callback) {
     // sql指令 -> 所有shop data
