@@ -212,7 +212,8 @@ function getShop(id, callback) {
             shopInfo.meals.push({
                 "meal_id": result.meal_id,
                 "meal_name": result.meal_name,
-                "meal_price": result.meal_price
+                "meal_price": result.meal_price,
+                "meal_discount": result.meal_discount
             });
         }
         callback(undefined, shopInfo);
