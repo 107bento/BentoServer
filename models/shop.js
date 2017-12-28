@@ -223,14 +223,15 @@ function getShop(id, callback) {
 
 function patchShop(shopInfo, username, callback) {
     // transaction 如果有一個 error 全部 rollback
+    console.log(shopInfo);
     connection.beginTransaction((err) => {
         if (err) { 
             return callback({"error": "Something went wrong."}, undefined);
         }
         // 使用 promise 確保事情做完才做下一件事情
         // 每個 function 回傳 promise 再丟給下一個人處理
-        _patchShopInfo(shopInfo, username).then(() => {
-            return _patchShopMeals(shopInfo.meals, shopInfo.shop_id);
+        _patchShopInfo(shopInfo, username).then(() => { // 基本資料 update 結束後
+            return _patchShopMeals(shopInfo.meals, shopInfo.shop_id); // 才 update 菜單部份
         }).then(() => {
             return callback(undefined, {"success": "Patch successfully."});
         }).catch((err) => {
@@ -245,12 +246,24 @@ function patchShop(shopInfo, username, callback) {
 
 function _patchShopInfo(info, username) {
     return new Promise((resolve, reject) => {
-        delete info.meals;
+        delete info.meals; // 先去掉菜單部份
         let infoArray = [];
         for (let data of info) {
             infoArray.push(data);
         }
-        connection.query(`UPDATE shops SET shop_name = ?, shop_time = ?, shop_phone = ?, shop_address = ?, lowest_amount = ?, highest_amount = ?, shipping_fee = ?, payment = ?, settlement = ?, shop_discount = ?, password = ? WHERE username = ${username}`, infoArray, function (error, results, fields) {
+        connection.query(`UPDATE shops SET shop_name = ?, 
+                                           shop_time = ?, 
+                                           shop_phone = ?, 
+                                           shop_address = ?, 
+                                           lowest_amount = ?, 
+                                           highest_amount = ?, 
+                                           shipping_fee = ?, 
+                                           payment = ?, 
+                                           settlement = ?, 
+                                           shop_discount = ?, 
+                                           password = ? 
+                                           WHERE username = ${username}`, 
+            infoArray, function (error, results, fields) {
             if (error) {
                 reject(error);
             }
@@ -287,6 +300,41 @@ function _patchShopMeals(meals, shop_id) {
         });
     });
 }
+
+// 拿到 today details 
+function _getTodayDetails() {
+    /// 建立今天的日期
+    // 先寫死 date
+    // const date = moment().format('YYYY-MM-DD hh:mm:ss');
+    const date = '2017-12-01 00:00:00';
+    // 搜尋所有當日的訂單 by 隨機
+    const sql = 'select amount, final_meal, subtotal from details where order_id IN(select order_id from orders where order_time > "' + date + '") and state = 2' ;
+
+    return new Promise((resolve, reject) => {
+        connection.query(sql, (err, results) => {
+            if (err) {
+                reject(err);
+            }
+            // 每一筆訂單
+            let details = {};
+            let i = 0;
+            // 一筆一筆看訂單 (main, wish_1, wish_2)，把 results 寫進去 details
+            for (let result of results) {
+                // 設定要儲存訂單內容
+                let subTotal = result.subtotal;
+                let amount = result.amount;
+                let final = result.final_meal;
+                let state = result.state;
+
+                details[i++] = {subTotal, amount, final, state};
+            }
+            details.length = results.length;
+            // console.log(details);
+            resolve(details);
+        });
+    }) 
+}
+
 module.exports = {
     showShops,
     onlyshowShop,

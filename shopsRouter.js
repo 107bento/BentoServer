@@ -57,7 +57,7 @@ shopsRouter.get('/:id', (req, res) => {
     }
 });
 
-// 拿某店家資訊
+// 店家登入拿自己店家資訊
 shopsRouter.get('/:id/info', (req, res) => {
     // 判斷有沒有登入
     let username = shop.checkLogin(req.cookies);
@@ -69,7 +69,7 @@ shopsRouter.get('/:id/info', (req, res) => {
     // 拿到網址變數
     let id = req.params.id;
     // 判斷是不是 'me'
-    if (id == 'me') {
+    if (id === 'me') {
         id = username;
     }
     shop.getShop(id, (error, results) => {
@@ -95,15 +95,15 @@ shopsRouter.patch('/:id/info', (req, res) => {
     // 拿到網址變數
     let id = req.params.id;
     // 判斷是不是 'me'
-    if (id == 'me') {
+    if (id === 'me') {
         id = username;
     }
     // 判斷資料齊不齊全
     const data = [
         'shop_name', 'shop_time', 'shop_phone', 'shop_address', 'lowest_amount', 'highest_amount', 'shipping_fee', 'payment', 'settlement', 'shop_discount', 'meals', 'password'
     ]
-    const info = {}; 
-    let miss = "";
+    const info = {}; // 拿來放店家資料的 object
+    let miss = ""; // 確認是否有缺少資料
     for (let d of data) {
         if (!req.body.hasOwnProperty(d)) {
             miss += `${d}, `;
@@ -117,6 +117,7 @@ shopsRouter.patch('/:id/info', (req, res) => {
         });
     }
     // console.log(info);
+    // console.log (id);
     // call patch function
     shop.patchShop(info, id, (error, results) => {
         if (typeof(results) !== undefined && typeof(error) == "undefined") {
