@@ -230,7 +230,7 @@ function patchShop(shopInfo, username, callback) {
         // 使用 promise 確保事情做完才做下一件事情
         // 每個 function 回傳 promise 再丟給下一個人處理
         _patchShopInfo(shopInfo, username).then(() => {
-            return _patchShopMeals(shopInfo.meals, username);
+            return _patchShopMeals(shopInfo.meals, shopInfo.shop_id);
         }).then(() => {
             return callback(undefined, {"success": "Patch successfully."});
         }).catch((err) => {
@@ -250,7 +250,6 @@ function _patchShopInfo(info, username) {
         for (let data of info) {
             infoArray.push(data);
         }
-        const sql = ``;
         connection.query(`UPDATE shops SET shop_name = ?, shop_time = ?, shop_phone = ?, shop_address = ?, lowest_amount = ?, highest_amount = ?, shipping_fee = ?, payment = ?, settlement = ?, shop_discount = ?, password = ? WHERE username = ${username}`, infoArray, function (error, results, fields) {
             if (error) {
                 reject(error);
@@ -260,9 +259,33 @@ function _patchShopInfo(info, username) {
     });
 }
 
-function _patchShopMeals(meals, username) {
+function _patchShopMeals(meals, shop_id) {
     // 還沒更新店家訂單
     // 要記得用 async for 參考 patch 訂單
+    let count = 0;
+    let sql = '';
+    return new Promise((resolve, reject) => {
+        async.each(meals, (meal, callback) => {
+            if (meal.id == null) {
+                sql = `insert into meals (${meal.meal_id}, ${shop_id}, ${meal.meal_name}, ${meal.meal_price}, ${meal.meal_discount});`;
+            } else {
+                sql = `update meals set meal_name=${meal.meal_name}, meal_price=${meal.meal}, meal_discount=${meal.meal_discount} where meal_id=${meal.meal_id} and shop_id=${shop_id};`;
+            }
+            connection.query(sql, function (error, results) {
+                if (error) {
+                    reject(error);
+                }
+                count++;
+                if (count == meals.length) {
+                    resolve();
+                }
+            });
+        }, (err) => {
+            if (err) {
+                reject({err, "error": "Something went wrong."});
+            }
+        });
+    });
 }
 module.exports = {
     showShops,
