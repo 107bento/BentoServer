@@ -392,7 +392,6 @@ function greedy() {
             details[detailKey].wishNumber = wishNumber;
             // console.log(details[detailKey]);
         }
-        // console.log("te");
         // 2. 事前準備
         for (let shopKey in shops) {
             // 如果數量小於 lowest, 篩選掉不可能店家
@@ -405,16 +404,14 @@ function greedy() {
             // 店家裡的 details 依志願序數量排序
             shops[shopKey].current_amount = 0;
             shops[shopKey].finalList = [];
-            // console.log("OK");
             if (shops[shopKey].details.length > 1){
                 // console.log(shops[shopKey].details);
                 // for (let detail of shops[shopKey].details) {
                 //     console.log(details[detail]);
                 // }
                 shops[shopKey].details.sort(function(a, b){console.log(a);console.log(b);return details[a].wishNumber-details[b].wishNumber});
-                console.log(shops[shopKey].details);
+                // console.log(shops[shopKey].details);
             }
-            // console.log("OK");
         }
         // 店家依互斥度排序 
         // keysSorted 為一個 object 裡面是店家互斥度排序的結果
