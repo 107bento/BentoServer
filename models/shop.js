@@ -1,4 +1,5 @@
 const moment = require('moment');
+const async = require('async');
 // 登入驗證
 function validate (username, password, callback) { 
     // 帳密要求字串型態
