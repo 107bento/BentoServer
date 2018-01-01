@@ -228,12 +228,16 @@ function patchShop(shopInfo, username, callback) {
         if (err) { 
             return callback({"error": "Something went wrong."}, undefined);
         }
-        // 使用 promise 確保事情做完才做下一件事情
-        // 每個 function 回傳 promise 再丟給下一個人處理
-        _patchShopInfo(shopInfo, username).then(() => { // 基本資料 update 結束後
-            return _patchShopMeals(shopInfo.meals, shopInfo.shop_id); // 才 update 菜單部份
+
+        // 更新店家基本資料、透過 username 拿 shop_id
+        Promise.all([_patchShopInfo(shopInfo, username), _getShopIdbyUsername(username)]).then(([, id]) => {
+            // 更新菜單
+            return _patchShopMeals(shopInfo.meals, id);
+        }).then(() => { 
+            // 記得 commit ， 否則會 rollback (特別注意)
+            return _commitTransactino();
         }).then(() => {
-            return callback(undefined, {"success": "Patch successfully."});
+            callback(undefined, {"success": "Patch successfully."});
         }).catch((err) => {
             // promise 被 reject 就代表有錯誤，需要丟回來這裡處理
             // 有任何一個 error 都 rollback 回去
