@@ -164,7 +164,19 @@ function onlyshowMeal (shop_id, callback) {
 // 拿到所有餐點的詳細資訊
 function getMealsInfo() {
     return new Promise((resolve, reject) => {
-        const sql = 'select meal_id, meal_name, meal_price, shop_name, shops.shop_id from shops, meals where meals.shop_id = shops.shop_id;';
+        const sql = `
+            SELECT 
+                meal_id,
+                meal_name,
+                meal_price,
+                shop_name,
+                shops.shop_id
+            FROM 
+                shops,
+                meals
+            WHERE
+                meals.shop_id = shops.shop_id;
+        `;
         connection.query(sql, (err, results) => {
             if (err) {
                 reject(err);
@@ -187,8 +199,21 @@ function getMealsInfo() {
 
 // 拿到某店家資訊
 function getShop(id, callback) {
-    const sql = `select * from shops, meals where username = '${id}' and meals.shop_id = shops.shop_id;`;
-    connection.query(sql, (err, results) => {
+    const sql = `
+        SELECT
+            * 
+        FROM
+            shops, 
+            meals 
+        WHERE
+            username = ?
+        AND
+            meals.shop_id = shops.shop_id;
+    `;
+    const values = [
+        id,
+    ];
+    connection.query(sql, values, (err, results) => {
         if (err) {
             callback(err, undefined);
             return;
@@ -335,15 +360,52 @@ function _patchShopMeals(meals, shop_id) {
     // 還沒更新店家訂單
     // 要記得用 async for 參考 patch 訂單
     let count = 0;
-    let sql = '';
     return new Promise((resolve, reject) => {
         async.each(meals, (meal, callback) => {
-            if (meal.id == null) {
-                sql = `insert into meals (${meal.meal_id}, ${shop_id}, ${meal.meal_name}, ${meal.meal_price}, ${meal.meal_discount});`;
-            } else {
-                sql = `update meals set meal_name=${meal.meal_name}, meal_price=${meal.meal}, meal_discount=${meal.meal_discount} where meal_id=${meal.meal_id} and shop_id=${shop_id};`;
+            let sql, values;
+
+            if (!meal.meal_id) { // 增加餐點
+                sql = `
+                    INSERT INTO meals(
+                        shop_id, 
+                        meal_name, 
+                        meal_price, 
+                        meal_discount
+                    ) values(
+                        ?, ?, ?, ?
+                    );
+                `;
+
+                values = [
+                    shop_id,
+                    meal.meal_name,
+                    meal.meal_price,
+                    meal.meal_discount
+                ];
+            } else { // 更新已有的餐點
+                sql = `
+                    UPDATE 
+                        meals 
+                    SET 
+                        meal_name = ?,
+                        meal_price = ?,
+                        meal_discount = ?
+                    WHERE
+                        meal_id = ?
+                    AND
+                        shop_id = ?;
+                `;
+
+                values = [
+                    meal.meal_name,
+                    meal.price,
+                    meal.meal_discount,
+                    meal.meal_id,
+                    shop_id,
+                ];
             }
-            connection.query(sql, function (error, results) {
+
+            connection.query(sql, values, function (error, results) {
                 if (error) {
                     reject(error);
                 }
