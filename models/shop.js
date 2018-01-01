@@ -284,24 +284,41 @@ function _getShopIdbyUsername(username) {
 
 function _patchShopInfo(info, username) {
     return new Promise((resolve, reject) => {
-        delete info.meals; // 先去掉菜單部份
-        let infoArray = [];
-        for (let data of info) {
-            infoArray.push(data);
-        }
-        connection.query(`UPDATE shops SET shop_name = ?, 
-                                           shop_time = ?, 
-                                           shop_phone = ?, 
-                                           shop_address = ?, 
-                                           lowest_amount = ?, 
-                                           highest_amount = ?, 
-                                           shipping_fee = ?, 
-                                           payment = ?, 
-                                           settlement = ?, 
-                                           shop_discount = ?, 
-                                           password = ? 
-                                           WHERE username = ${username}`, 
-            infoArray, function (error, results, fields) {
+        const sql = `
+            UPDATE 
+                shops 
+            SET 
+                shop_name = ?, 
+                shop_time = ?, 
+                shop_phone = ?, 
+                shop_address = ?, 
+                lowest_amount = ?, 
+                highest_amount = ?, 
+                shipping_fee = ?, 
+                payment = ?, 
+                settlement = ?, 
+                shop_discount = ?, 
+                password = ? 
+            WHERE 
+                username = ?
+        `;
+
+        const values = [
+            info.shop_name,
+            info.shop_time,
+            info.shop_phone,
+            info.shop_address,
+            info.lowest_amount,
+            info.highest_amount,
+            info.shipping_fee,
+            info.payment,
+            info.settlement,
+            info.shop_discount,
+            info.password,
+            username,
+        ];
+
+        connection.query(sql, values, function (error, results, fields) {
             if (error) {
                 reject(error);
             }
