@@ -244,6 +244,33 @@ function patchShop(shopInfo, username, callback) {
     });
 }
 
+// 給 username 拿到該 shop 的 shop_id
+// 用 promise
+function _getShopIdbyUsername(username) {
+    return new Promise((resolve, reject) => {
+        const sql = `
+            SELECT 
+                shop_id
+            FROM
+                shops
+            WHERE
+                username = ?;
+        `;
+
+        const values = [
+            username,
+        ];
+        connection.query(sql, values, (error, results) => {
+            if (error) {
+                reject(error);
+            }
+            
+            let shopid = results[0].shop_id;
+            resolve(shopid);
+        });
+    }); 
+}
+
 function _patchShopInfo(info, username) {
     return new Promise((resolve, reject) => {
         delete info.meals; // 先去掉菜單部份
