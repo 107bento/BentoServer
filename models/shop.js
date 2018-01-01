@@ -244,6 +244,17 @@ function patchShop(shopInfo, username, callback) {
     });
 }
 
+function _commitTransactino() {
+    return new Promise((resolve, reject) => {
+        connection.commit(function(err) {
+            if (err) {
+                reject({err, "error": "Something went wrong."});
+            }
+            resolve();
+        });
+    });
+}
+
 // 給 username 拿到該 shop 的 shop_id
 // 用 promise
 function _getShopIdbyUsername(username) {
