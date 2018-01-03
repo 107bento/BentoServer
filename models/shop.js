@@ -398,7 +398,7 @@ function _patchShopMeals(meals, shop_id) {
 
                 values = [
                     meal.meal_name,
-                    meal.price,
+                    meal.meal_price,
                     meal.meal_discount,
                     meal.meal_id,
                     shop_id,
