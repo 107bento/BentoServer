@@ -129,4 +129,94 @@ shopsRouter.patch('/:id/info', (req, res) => {
         }
     });
 });
+
+// 修改菜單
+shopsRouter.patch('/:id/menu/:mealid', (req, res) => {
+    // 驗證登入
+    let username = shop.checkLogin(req.cookies);
+    if (!username) {
+        return res.status(401).json({
+            error: 'please login!'
+        });
+    }
+    // 拿到的資料包好
+    let meal_id = req.params.mealid;
+    meal = {
+        meal_id,
+        "meal_name" : req.body.meal_name,
+        "meal_price" : req.body.meal_price
+    };
+    // 拿到網址變數 ＆ 判斷是不是 'me'
+    let id = req.params.id;
+    if (id === 'me') {
+        id = username;
+    }
+    
+    shop.patchMeal(meal, id, (error, results) => {
+        if (typeof(results) !== undefined && typeof(error) == "undefined") {
+            return res.status(200).json(results);
+        } else {
+            return res.status(400).json({
+                error: error
+            });
+        }
+    });
+
+});
+
+// 新增菜單
+shopsRouter.post('/:id/menu/', (req, res) => {
+    // 驗證登入
+    let username = shop.checkLogin(req.cookies);
+    if (!username) {
+        return res.status(401).json({
+            error: 'please login!'
+        });
+    }
+    // 拿到的資料包好
+    meal = {
+        "meal_name" : req.body.meal_name,
+        "meal_price" : req.body.meal_price
+    };
+    // 拿到網址變數 ＆ 判斷是不是 'me'
+    let id = req.params.id;
+    if (id === 'me') {
+        id = username;
+    }
+    
+    shop.newMeal(meal, id, (error, results) => {
+        if (typeof(results) !== undefined && typeof(error) == "undefined") {
+            return res.status(200).json(results);
+        } else {
+            return res.status(400).json({
+                error: error
+            });
+        }
+    });
+});
+
+// 刪除菜單
+shopsRouter.delete('/:id/menu/:mealid', (req, res) => {
+    // 驗證登入
+    let username = shop.checkLogin(req.cookies);
+    if (!username) {
+        return res.status(401).json({
+            error: 'please login!'
+        });
+    }
+    // 只需要 mealid 資料
+    let meal_id = req.params.mealid;
+
+    shop.delMeal(meal_id, (error, results) => {
+        if (typeof(results) !== undefined && typeof(error) == "undefined") {
+            return res.status(200).json(results);
+        } else {
+            return res.status(400).json({
+                error: error
+            });
+        }
+    });
+
+});
+
 module.exports = shopsRouter;
