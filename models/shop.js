@@ -430,5 +430,8 @@ module.exports = {
     validate,
     checkLogin,
     getShop,
-    patchShop
+    patchShop,
+    patchMeal,
+    newMeal,
+    delMeal
 };
