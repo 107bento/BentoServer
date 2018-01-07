@@ -50,7 +50,7 @@ loginRouter.post('/shops', (req, res) => {
     const password = req.body.password;
 
     if (!username || !password) {
-        return res.status(400).json({
+        return res.status(401).json({
             error: 'lost username or password.'
         });
     }
