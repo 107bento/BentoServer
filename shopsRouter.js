@@ -100,7 +100,7 @@ shopsRouter.patch('/:id/info', (req, res) => {
     }
     // 判斷資料齊不齊全
     const data = [
-        'shop_name', 'shop_time', 'shop_phone', 'shop_address', 'lowest_amount', 'highest_amount', 'shipping_fee', 'payment', 'settlement', 'shop_discount', 'meals', 'password'
+        'shop_name', 'shop_time', 'shop_phone', 'shop_address', 'lowest_amount', 'highest_amount', 'shipping_fee', 'payment', 'settlement', 'shop_discount', 'password'
     ]
     const info = {}; // 拿來放店家資料的 object
     let miss = ""; // 確認是否有缺少資料
