@@ -356,6 +356,7 @@ function _patchShopInfo(info, username) {
     });
 }
 
+/* 已經用不到的 
 function _patchShopMeals(meals, shop_id) {
     // 還沒更新店家訂單
     // 要記得用 async for 參考 patch 訂單
@@ -380,7 +381,7 @@ function _patchShopMeals(meals, shop_id) {
                     shop_id,
                     meal.meal_name,
                     meal.meal_price,
-                    meal.meal_discount
+                    meal.meal_discount,
                 ];
             } else { // 更新已有的餐點
                 sql = `
@@ -420,7 +421,7 @@ function _patchShopMeals(meals, shop_id) {
             }
         });
     });
-}
+}*/
 
 module.exports = {
     showShops,
