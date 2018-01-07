@@ -246,23 +246,23 @@ function getShop(id, callback) {
     });
 }
 
+// 改店家基本資料
 function patchShop(shopInfo, username, callback) {
     // transaction 如果有一個 error 全部 rollback
-    console.log(shopInfo);
     connection.beginTransaction((err) => {
         if (err) { 
             return callback({"error": "Something went wrong."}, undefined);
         }
-
-        // 更新店家基本資料、透過 username 拿 shop_id
+        _patchShopInfo(shopInfo, username).then(() => {
+        /* 更新店家基本資料、透過 username 拿 shop_id
         Promise.all([_patchShopInfo(shopInfo, username), _getShopIdbyUsername(username)]).then(([, id]) => {
-            // 更新菜單
+            更新菜單
             return _patchShopMeals(shopInfo.meals, id);
         }).then(() => { 
-            // 記得 commit ， 否則會 rollback (特別注意)
+            記得 commit ， 否則會 rollback (特別注意)*/
             return _commitTransactino();
         }).then(() => {
-            callback(undefined, {"success": "Patch successfully."});
+            callback(undefined, shopInfo);
         }).catch((err) => {
             // promise 被 reject 就代表有錯誤，需要丟回來這裡處理
             // 有任何一個 error 都 rollback 回去
