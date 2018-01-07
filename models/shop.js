@@ -356,6 +356,100 @@ function _patchShopInfo(info, username) {
     });
 }
 
+
+// 修改菜單
+function patchMeal(meal, username, callback) {
+    if (!meal.meal_name || typeof(meal.meal_price) !== 'number' || typeof(meal.meal_name) !== 'string') { 
+        let error='your input is wrong !!';
+        callback(error, undefined);
+        return;
+    }
+    let sql, values;
+    sql = `
+        UPDATE
+            meals
+        SET
+            meal_name = ?,
+            meal_price = ?,
+            meal_discount = 0
+        WHERE
+            meal_id = ?;
+    `;
+
+    values = [
+        meal.meal_name,
+        meal.meal_price,
+        meal.meal_id,
+    ];
+    connection.query(sql, values, function (error, results) {
+        if (error) {
+            reject(error);
+        }
+        callback(undefined, meal);
+    });
+}
+
+// 新增菜單
+function newMeal(meal, username, callback) {
+    if (!meal.meal_name || typeof(meal.meal_price) !== 'number' || typeof(meal.meal_name) !== 'string') { 
+        let error='your input is wrong !!';
+        callback(error, undefined);
+        return;
+    }
+    _getShopIdbyUsername(username).then((shopid) => {
+        let sql, values;
+        sql = `
+            INSERT INTO meals(
+                shop_id, 
+                meal_name, 
+                meal_price, 
+                meal_discount
+            ) values(
+                ?,?,?,0
+            );
+        `;
+
+        values = [
+            shopid,
+            meal.meal_name,
+            meal.meal_price,
+        ];
+        connection.query(sql, values, function (error, results) {
+            if (error) {
+                reject(error);
+            }
+            callback(undefined, meal);
+        });
+    });
+    
+}
+
+// 刪除菜單
+function delMeal(mealid, callback) {
+    let sql, values;
+    sql = `
+        DELETE FROM
+            meals
+        WHERE
+            meal_id = ?
+        ;
+    `;
+
+    values = [
+        mealid,
+    ];
+    connection.query(sql, values, (err, results) => {
+        if (err) {
+            callback(err, undefined);
+            return;
+        }
+        callback(undefined, {"meal" : mealid, "message" : "delete OK!"});
+        return;
+    });
+    
+}
+
+
 /* 已經用不到的 
 function _patchShopMeals(meals, shop_id) {
     // 還沒更新店家訂單
