@@ -7,7 +7,7 @@ const shop = require('./models/shop');
 /*shopsRouter.get('/', (req, res) => {
 
     shop.showShop((error, results) => {
-        
+
         if (typeof(results) !== undefined && typeof(error) == "undefined") {
             return res.status(200).json(results);
         } else {
@@ -20,7 +20,7 @@ const shop = require('./models/shop');
 
 // 只秀店家
 shopsRouter.get('/', (req, res) => {
-    shop.onlyshowShop( (error, results) => {    
+    shop.onlyshowShop( (error, results) => {
         if (typeof(results) !== undefined && typeof(error) == "undefined") {
             return res.status(200).json(results);
         } else {
@@ -35,7 +35,7 @@ shopsRouter.get('/', (req, res) => {
 shopsRouter.get('/:id', (req, res) => {
     let shop_id = req.params.id;
     if (shop_id == 'all') {
-        shop.showShops((error, results) => {    
+        shop.showShops((error, results) => {
             if (typeof(results) !== undefined && typeof(error) == "undefined") {
                 return res.status(200).json(results);
             } else {
@@ -45,7 +45,7 @@ shopsRouter.get('/:id', (req, res) => {
             }
         });
     } else {
-        shop.onlyshowMeal(parseInt(shop_id), (error, results) => {    
+        shop.onlyshowMeal(parseInt(shop_id), (error, results) => {
             if (typeof(results) !== undefined && typeof(error) == "undefined") {
                 return res.status(200).json(results);
             } else {
@@ -100,7 +100,7 @@ shopsRouter.patch('/:id/info', (req, res) => {
     }
     // 判斷資料齊不齊全
     const data = [
-        'shop_name', 'shop_time', 'shop_phone', 'shop_address', 'lowest_amount', 'highest_amount', 'shipping_fee', 'payment', 'settlement', 'shop_discount', 'password'
+        'username', 'shop_name', 'shop_time', 'shop_phone', 'shop_address', 'lowest_amount', 'highest_amount', 'shipping_fee', 'payment', 'settlement', 'shop_discount', 'password'
     ]
     const info = {}; // 拿來放店家資料的 object
     let miss = ""; // 確認是否有缺少資料
@@ -151,7 +151,7 @@ shopsRouter.patch('/:id/menu/:mealid', (req, res) => {
     if (id === 'me') {
         id = username;
     }
-    
+
     shop.patchMeal(meal, id, (error, results) => {
         if (typeof(results) !== undefined && typeof(error) == "undefined") {
             return res.status(200).json(results);
@@ -183,7 +183,7 @@ shopsRouter.post('/:id/menu/', (req, res) => {
     if (id === 'me') {
         id = username;
     }
-    
+
     shop.newMeal(meal, id, (error, results) => {
         if (typeof(results) !== undefined && typeof(error) == "undefined") {
             return res.status(200).json(results);
