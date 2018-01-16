@@ -501,6 +501,34 @@ function _getMealsId(username) {
     });
 }
 
+// _getAllOrders() => 取所有 order_id 和 order_time
+function _getAllOrders() {
+    let sql = `
+    SELECT 
+        SUBSTRING(order_time,1,13) time,
+        order_id 
+    FROM 
+        orders;
+    `;
+
+    return new Promise((resolve, reject) => {
+        connection.query(sql, (err, results) => {
+            if (err) {
+                reject(err);
+            }
+            let orders = [];
+            let i = 0;
+            for (let result of results) {
+                // 設定要儲存訂單內容
+                let order_id = result.order_id;
+                let time = result.time;
+                orders[i++] = {order_id, time};
+            }
+            resolve(orders);
+        });
+    });
+}
+
 /* 已經用不到的 
 function _patchShopMeals(meals, shop_id) {
     // 還沒更新店家訂單
