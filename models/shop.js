@@ -598,6 +598,16 @@ function _getDetailsId(order_id) {
     });
 }
 
+function getOrders(username, callback) {
+   
+    Promise.all([ _getAllOrders(), _getMealsId(username)]).then( ([orders, meals]) => {
+        return _groupDate(orders);
+    }).then((group) => {
+        callback(undefined, group);
+    }).catch((err) => {
+        return callback(err, undefined);
+    });
+}
 /* 已經用不到的 
 function _patchShopMeals(meals, shop_id) {
     // 還沒更新店家訂單
