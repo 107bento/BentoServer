@@ -529,6 +529,47 @@ function _getAllOrders() {
     });
 }
 
+// _groupDate (orders) => 把 orders 拆成
+// group : {
+//      "2018-01-09 ": {
+//          "1": [],
+//          "2": [],
+//          "3": [],
+//          "4": [],
+//          "5": [],
+//          "6": [],
+//          "7": [],
+//          "8": []
+//      },
+//      "2018-01-10 ": {
+//          "9": [],
+//          "10": [],
+//          "11": []
+//      },
+//      "定餐日期" ： {
+//          "order_id 1" : [ 所屬 detail id ],
+//          "order_id 2" : [ 所屬 detail id ],
+//      }
+// }
+// 但是 [ 所屬 detail id ] 還沒做好
+
+function _groupDate (orders) {
+    return new Promise((resolve,reject) => {
+        let group = {};
+        for (let order of orders) {
+            let date = order.time.substring(0,11);
+            let orderid = order.order_id;
+            if (group[date] == null) {
+                group[date] = {};
+                group[date][orderid] = [];
+            } else {
+                group[date][orderid] = [];
+            }
+        }
+        resolve(group);
+    });
+}
+
 /* 已經用不到的 
 function _patchShopMeals(meals, shop_id) {
     // 還沒更新店家訂單
