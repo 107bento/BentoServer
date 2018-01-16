@@ -467,6 +467,39 @@ function delMeal(mealid, callback) {
     
 }
 
+// _getMealsId(username) => 透過 shop 的 username 拿到所有 meal 的 id
+function _getMealsId(username) {
+    return new Promise((resolve, reject) => {
+        let sql, values;
+        sql = `
+            SELECT
+                meal_id
+            FROM
+                meals
+            WHERE
+                meals.shop_id = 
+                (
+                    SELECT
+                        shop_id
+                    FROM
+                        shops
+                    WHERE
+                        username = ?
+                );
+        `;
+        values = [username];
+        connection.query(sql, values, (error, results) => {
+            if (error) {
+                reject(error);
+            }
+            let meals = [];
+            for (let result of results) {
+                meals.push(result);
+            }
+            resolve(meals);
+        });
+    });
+}
 
 /* 已經用不到的 
 function _patchShopMeals(meals, shop_id) {
