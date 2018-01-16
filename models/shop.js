@@ -570,6 +570,34 @@ function _groupDate (orders) {
     });
 }
 
+// _getDetailsId(order_id) => 透過 order_id 拿到所屬 detail 的 id
+function _getDetailsId(order_id) {
+    return new Promise((resolve, reject) => {
+        let sql, values;
+        sql = `
+            SELECT
+                detail_id
+            FROM
+                details
+            WHERE
+                details.order_id = ? ;
+        `;
+        values = [
+            order_id,
+        ];
+        connection.query(sql, values, (err, results) => {
+            if (err) {
+                reject(err);
+            }
+            let details = [];
+            for (let result of results) {
+                details.push(result);
+            }
+            resolve(details);
+        });
+    });
+}
+
 /* 已經用不到的 
 function _patchShopMeals(meals, shop_id) {
     // 還沒更新店家訂單
