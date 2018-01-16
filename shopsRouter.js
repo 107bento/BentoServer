@@ -219,4 +219,32 @@ shopsRouter.delete('/:id/menu/:mealid', (req, res) => {
 
 });
 
+shopsRouter.get('/:id/orders', (req, res) => { 
+      
+    // 驗證登入
+    let username = shop.checkLogin(req.cookies);
+    if (!username) {
+        return res.status(401).json({
+            error: 'please login!'
+        });
+    }
+
+    // 拿到網址變數 ＆ 判斷是不是 'me'
+    let id = req.params.id;
+    if (id === 'me') {
+        id = username;
+    }
+
+    shop.getOrders(id, (error, results) => {
+        if (typeof(results) !== undefined && typeof(error) == "undefined") {
+            return res.status(200).json(results);
+        } else {
+            return res.status(400).json({
+                error: error
+            });
+        }
+    });
+}); 
+
+
 module.exports = shopsRouter;
