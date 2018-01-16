@@ -41,7 +41,25 @@ function checkLogin(reqCookie) {
 // 全部店家 & 菜單
 function showShops (callback) {
     // sql指令 -> 所有shop data
-    let sql = `select shops.shop_id,shop_name,lowest_amount,highest_amount,shipping_fee,shop_discount,meals.meal_id,meal_name,meal_price,meal_discount from shops, meals where shops.shop_id = meals.shop_id Group by meals.meal_id;`;  
+    let sql = `
+        SELECT
+            shops.shop_id,
+                shop_name,
+                lowest_amount,
+                highest_amount,
+                shipping_fee,
+                shop_discount,
+            meals.meal_id,
+                meal_name,
+                meal_price,
+                meal_discount 
+        FROM 
+            shops, meals 
+        WHERE 
+            shops.shop_id = meals.shop_id 
+        Group by 
+            meals.meal_id;
+        `;  
     connection.query(sql, (err, results) => {
         let tmp = {};
         if (err) {
