@@ -686,5 +686,6 @@ module.exports = {
     patchShop,
     patchMeal,
     newMeal,
-    delMeal
+    delMeal,
+    getOrders,
 };
