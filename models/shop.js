@@ -420,10 +420,14 @@ function newMeal(meal, username, callback) {
             if (error) {
                 reject(error);
             }
-            callback(undefined, meal);
+            console.log(results);
+            const data = {
+              meal_id: results.insertId
+            }
+            callback(undefined, data);
         });
     });
-    
+
 }
 
 // 刪除菜單
