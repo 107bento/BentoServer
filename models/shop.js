@@ -383,9 +383,11 @@ function patchMeal(meal, username, callback) {
     ];
     connection.query(sql, values, function (error, results) {
         if (error) {
-            reject(error);
+            callback(error, undefined);
+            return;
         }
         callback(undefined, meal);
+        return;
     });
 }
 
