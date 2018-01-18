@@ -41,7 +41,25 @@ function checkLogin(reqCookie) {
 // 全部店家 & 菜單
 function showShops (callback) {
     // sql指令 -> 所有shop data
-    let sql = `select shops.shop_id,shop_name,lowest_amount,highest_amount,shipping_fee,shop_discount,meals.meal_id,meal_name,meal_price,meal_discount from shops, meals where shops.shop_id = meals.shop_id Group by meals.meal_id;`;
+    let sql = `
+        SELECT
+            shops.shop_id,
+                shop_name,
+                lowest_amount,
+                highest_amount,
+                shipping_fee,
+                shop_discount,
+            meals.meal_id,
+                meal_name,
+                meal_price,
+                meal_discount 
+        FROM 
+            shops, meals 
+        WHERE 
+            shops.shop_id = meals.shop_id 
+        Group by 
+            meals.meal_id;
+        `;  
     connection.query(sql, (err, results) => {
         let tmp = {};
         if (err) {
@@ -455,8 +473,148 @@ function delMeal(mealid, callback) {
 
 }
 
+// _getMealsId(username) => 透過 shop 的 username 拿到所有 meal 的 id
+function _getMealsId(username) {
+    return new Promise((resolve, reject) => {
+        let sql, values;
+        sql = `
+            SELECT
+                meal_id
+            FROM
+                meals
+            WHERE
+                meals.shop_id = 
+                (
+                    SELECT
+                        shop_id
+                    FROM
+                        shops
+                    WHERE
+                        username = ?
+                );
+        `;
+        values = [username];
+        connection.query(sql, values, (error, results) => {
+            if (error) {
+                reject(error);
+            }
+            let meals = [];
+            for (let result of results) {
+                meals.push(result);
+            }
+            resolve(meals);
+        });
+    });
+}
 
-/* 已經用不到的
+// _getAllOrders() => 取所有 order_id 和 order_time
+function _getAllOrders() {
+    let sql = `
+    SELECT 
+        SUBSTRING(order_time,1,13) time,
+        order_id 
+    FROM 
+        orders;
+    `;
+
+    return new Promise((resolve, reject) => {
+        connection.query(sql, (err, results) => {
+            if (err) {
+                reject(err);
+            }
+            let orders = [];
+            let i = 0;
+            for (let result of results) {
+                // 設定要儲存訂單內容
+                let order_id = result.order_id;
+                let time = result.time;
+                orders[i++] = {order_id, time};
+            }
+            resolve(orders);
+        });
+    });
+}
+
+// _groupDate (orders) => 把 orders 拆成
+// group : {
+//      "2018-01-09 ": {
+//          "1": [],
+//          "2": [],
+//          "3": [],
+//          "4": [],
+//          "5": [],
+//          "6": [],
+//          "7": [],
+//          "8": []
+//      },
+//      "2018-01-10 ": {
+//          "9": [],
+//          "10": [],
+//          "11": []
+//      },
+//      "定餐日期" ： {
+//          "order_id 1" : [ 所屬 detail id ],
+//          "order_id 2" : [ 所屬 detail id ],
+//      }
+// }
+// 但是 [ 所屬 detail id ] 還沒做好
+
+function _groupDate (orders) {
+    return new Promise((resolve,reject) => {
+        let group = {};
+        for (let order of orders) {
+            let date = order.time.substring(0,11);
+            let orderid = order.order_id;
+            if (group[date] == null) {
+                group[date] = {};
+                group[date][orderid] = [];
+            } else {
+                group[date][orderid] = [];
+            }
+        }
+        resolve(group);
+    });
+}
+
+// _getDetailsId(order_id) => 透過 order_id 拿到所屬 detail 的 id
+function _getDetailsId(order_id) {
+    return new Promise((resolve, reject) => {
+        let sql, values;
+        sql = `
+            SELECT
+                detail_id
+            FROM
+                details
+            WHERE
+                details.order_id = ? ;
+        `;
+        values = [
+            order_id,
+        ];
+        connection.query(sql, values, (err, results) => {
+            if (err) {
+                reject(err);
+            }
+            let details = [];
+            for (let result of results) {
+                details.push(result);
+            }
+            resolve(details);
+        });
+    });
+}
+
+function getOrders(username, callback) {
+   
+    Promise.all([ _getAllOrders(), _getMealsId(username)]).then( ([orders, meals]) => {
+        return _groupDate(orders);
+    }).then((group) => {
+        callback(undefined, group);
+    }).catch((err) => {
+        return callback(err, undefined);
+    });
+}
+/* 已經用不到的 
 function _patchShopMeals(meals, shop_id) {
     // 還沒更新店家訂單
     // 要記得用 async for 參考 patch 訂單
@@ -534,5 +692,6 @@ module.exports = {
     patchShop,
     patchMeal,
     newMeal,
-    delMeal
+    delMeal,
+    getOrders,
 };
