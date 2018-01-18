@@ -1,17 +1,17 @@
 const moment = require('moment');
 const async = require('async');
 // 登入驗證
-function validate (username, password, callback) { 
+function validate (username, password, callback) {
     // 帳密要求字串型態
-    if (typeof(username) !== 'string' || typeof(password) !== 'string') { 
+    if (typeof(username) !== 'string' || typeof(password) !== 'string') {
         let error='username and password must be string.';
         callback(error, undefined);
         return;
     }
 
     // sql指令 -> 確認帳密
-    let sql = `select * from shops where username='${username}' and password='${password}';`;  
-    
+    let sql = `select * from shops where username='${username}' and password='${password}';`;
+
     connection.query(sql, (err, results) => {
         if (err) {
             throw err;
@@ -28,7 +28,7 @@ function validate (username, password, callback) {
     });
 }
 
-// 對應 shopCookie 
+// 對應 shopCookie
 function checkLogin(reqCookie) {
     let uuid = reqCookie.BENTOSESSIONSHOPID;
     if (_shopCookies[uuid]) {
@@ -41,14 +41,14 @@ function checkLogin(reqCookie) {
 // 全部店家 & 菜單
 function showShops (callback) {
     // sql指令 -> 所有shop data
-    let sql = `select shops.shop_id,shop_name,lowest_amount,highest_amount,shipping_fee,shop_discount,meals.meal_id,meal_name,meal_price,meal_discount from shops, meals where shops.shop_id = meals.shop_id Group by meals.meal_id;`;  
+    let sql = `select shops.shop_id,shop_name,lowest_amount,highest_amount,shipping_fee,shop_discount,meals.meal_id,meal_name,meal_price,meal_discount from shops, meals where shops.shop_id = meals.shop_id Group by meals.meal_id;`;
     connection.query(sql, (err, results) => {
         let tmp = {};
         if (err) {
             throw err;
         }
 
-        //hash 
+        //hash
         for(let result of results) { // 讀每一筆 sql 查詢出來的資料
             if(tmp[result.shop_id] == null) {
                 // shop 未存在,增加店家
@@ -61,7 +61,7 @@ function showShops (callback) {
                     "shop_discount": result.shop_discount,
                     "meals": []
                 };
-            } 
+            }
             // 最後再加餐點
             // return answer ? "yes" : "no";
             // answer is true then return "yes" , answer is false then return "no"
@@ -100,7 +100,7 @@ function onlyshowShop (callback) {
             throw err;
         }
 
-        //hash 
+        //hash
         for(let result of results) { // 讀每一筆 sql 查詢出來的資料
             if(tmp[result.shop_id] == null) {
                 // shop 未存在,增加店家
@@ -112,7 +112,7 @@ function onlyshowShop (callback) {
                     "shipping_fee": result.shipping_fee,
                     "shop_discount": result.shop_discount
                 };
-            }    
+            }
         }
 
         let shops = [];
@@ -128,7 +128,7 @@ function onlyshowShop (callback) {
 // 拿到店家 id 對應的 Meal
 function onlyshowMeal (shop_id, callback) {
     // sql指令 -> 所有shop data
-    let sql = `select meals.meal_id,meal_name,meal_price,meal_discount from meals where meals.shop_id =` + shop_id +` Group by meals.meal_id;`;   
+    let sql = `select meals.meal_id,meal_name,meal_price,meal_discount from meals where meals.shop_id =` + shop_id +` Group by meals.meal_id;`;
     connection.query(sql, (err, results) => {
         if (err) {
             callback("Something went wrong.", undefined);
@@ -139,7 +139,7 @@ function onlyshowMeal (shop_id, callback) {
             callback("This shop doesn't have menu or not exist.", undefined);
             return;
         } else {
-        //hash 
+        //hash
             let tmp = {};
             for(let result of results) { // 讀每一筆 sql 查詢出來的資料
                 tmp[result.meal_id] = {
@@ -147,7 +147,7 @@ function onlyshowMeal (shop_id, callback) {
                     "meal_name": result.meal_name,
                     "meal_price": result.meal_price,
                     "meal_discount": result.meal_discount
-                };  
+                };
             }
 
             let meals = [];
@@ -165,13 +165,13 @@ function onlyshowMeal (shop_id, callback) {
 function getMealsInfo() {
     return new Promise((resolve, reject) => {
         const sql = `
-            SELECT 
+            SELECT
                 meal_id,
                 meal_name,
                 meal_price,
                 shop_name,
                 shops.shop_id
-            FROM 
+            FROM
                 shops,
                 meals
             WHERE
@@ -201,10 +201,10 @@ function getMealsInfo() {
 function getShop(id, callback) {
     const sql = `
         SELECT
-            * 
+            *
         FROM
-            shops, 
-            meals 
+            shops,
+            meals
         WHERE
             username = ?
         AND
@@ -250,7 +250,7 @@ function getShop(id, callback) {
 function patchShop(shopInfo, username, callback) {
     // transaction 如果有一個 error 全部 rollback
     connection.beginTransaction((err) => {
-        if (err) { 
+        if (err) {
             return callback({"error": "Something went wrong."}, undefined);
         }
         _patchShopInfo(shopInfo, username).then(() => {
@@ -258,7 +258,7 @@ function patchShop(shopInfo, username, callback) {
         Promise.all([_patchShopInfo(shopInfo, username), _getShopIdbyUsername(username)]).then(([, id]) => {
             更新菜單
             return _patchShopMeals(shopInfo.meals, id);
-        }).then(() => { 
+        }).then(() => {
             記得 commit ， 否則會 rollback (特別注意)*/
             return _commitTransactino();
         }).then(() => {
@@ -289,7 +289,7 @@ function _commitTransactino() {
 function _getShopIdbyUsername(username) {
     return new Promise((resolve, reject) => {
         const sql = `
-            SELECT 
+            SELECT
                 shop_id
             FROM
                 shops
@@ -304,31 +304,31 @@ function _getShopIdbyUsername(username) {
             if (error) {
                 reject(error);
             }
-            
+
             let shopid = results[0].shop_id;
             resolve(shopid);
         });
-    }); 
+    });
 }
 
 function _patchShopInfo(info, username) {
     return new Promise((resolve, reject) => {
         const sql = `
-            UPDATE 
-                shops 
-            SET 
-                shop_name = ?, 
-                shop_time = ?, 
-                shop_phone = ?, 
-                shop_address = ?, 
-                lowest_amount = ?, 
-                highest_amount = ?, 
-                shipping_fee = ?, 
-                payment = ?, 
-                settlement = ?, 
-                shop_discount = ?, 
-                password = ? 
-            WHERE 
+            UPDATE
+                shops
+            SET
+                shop_name = ?,
+                shop_time = ?,
+                shop_phone = ?,
+                shop_address = ?,
+                lowest_amount = ?,
+                highest_amount = ?,
+                shipping_fee = ?,
+                payment = ?,
+                settlement = ?,
+                shop_discount = ?,
+                password = ?
+            WHERE
                 username = ?
         `;
 
@@ -359,7 +359,7 @@ function _patchShopInfo(info, username) {
 
 // 修改菜單
 function patchMeal(meal, username, callback) {
-    if (!meal.meal_name || typeof(meal.meal_price) !== 'number' || typeof(meal.meal_name) !== 'string') { 
+    if (!meal.meal_name || typeof(meal.meal_price) !== 'number' || typeof(meal.meal_name) !== 'string') {
         let error='your input is wrong !!';
         callback(error, undefined);
         return;
@@ -393,7 +393,7 @@ function patchMeal(meal, username, callback) {
 
 // 新增菜單
 function newMeal(meal, username, callback) {
-    if (!meal.meal_name || typeof(meal.meal_price) !== 'number' || typeof(meal.meal_name) !== 'string') { 
+    if (!meal.meal_name || typeof(meal.meal_price) !== 'number' || typeof(meal.meal_name) !== 'string') {
         let error='your input is wrong !!';
         callback(error, undefined);
         return;
@@ -402,9 +402,9 @@ function newMeal(meal, username, callback) {
         let sql, values;
         sql = `
             INSERT INTO meals(
-                shop_id, 
-                meal_name, 
-                meal_price, 
+                shop_id,
+                meal_name,
+                meal_price,
                 meal_discount
             ) values(
                 ?,?,?,0
@@ -452,11 +452,11 @@ function delMeal(mealid, callback) {
         callback(undefined, {"meal" : mealid, "message" : "delete OK!"});
         return;
     });
-    
+
 }
 
 
-/* 已經用不到的 
+/* 已經用不到的
 function _patchShopMeals(meals, shop_id) {
     // 還沒更新店家訂單
     // 要記得用 async for 參考 patch 訂單
@@ -468,9 +468,9 @@ function _patchShopMeals(meals, shop_id) {
             if (!meal.meal_id) { // 增加餐點
                 sql = `
                     INSERT INTO meals(
-                        shop_id, 
-                        meal_name, 
-                        meal_price, 
+                        shop_id,
+                        meal_name,
+                        meal_price,
                         meal_discount
                     ) values(
                         ?, ?, ?, ?
@@ -485,9 +485,9 @@ function _patchShopMeals(meals, shop_id) {
                 ];
             } else { // 更新已有的餐點
                 sql = `
-                    UPDATE 
-                        meals 
-                    SET 
+                    UPDATE
+                        meals
+                    SET
                         meal_name = ?,
                         meal_price = ?,
                         meal_discount = ?
