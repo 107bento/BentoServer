@@ -484,7 +484,8 @@ function _getAllOrders(shopid) {
                 T2.detail_id,
                 T2.amount,
                 T2.final_meal,
-                T3.meal_name
+                T3.meal_name,
+                T3.meal_price
             FROM
                 orders T1,
                 details T2,
@@ -533,6 +534,7 @@ function _groupDate (orders) {
             groups[date].tmp[order.final_meal] = {
                 "meal_id": order.final_meal,
                 "meal_name" : order.meal_name,
+                "meal_price" : order.meal_price,
                 "amount" : order.amount
             };
         // 累加該餐點
