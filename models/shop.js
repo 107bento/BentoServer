@@ -570,6 +570,62 @@ function getOrders(username, callback) {
         return callback(err, undefined);
     });
 }
+
+function _getOrderbyDate(shopid, date) {
+    return new Promise((resolve, reject) => {
+        let sql, values;
+        sql = `
+            SELECT
+                T2.amount,
+                T2.final_meal,
+                T3.meal_name,
+                T3.meal_price
+            FROM
+                orders T1,
+                details T2,
+                meals T3
+            WHERE
+                substring(T1.order_time,1,10) = ?
+            AND
+                T1.order_id = T2.order_id
+            AND
+                T2.final_meal = T3.meal_id
+            AND
+                T2.final_meal 
+            IN(
+                SELECT
+                    meal_id
+                FROM
+                    meals
+                WHERE
+                    meals.shop_id = ?
+            );
+        `;
+        values = [
+            date,
+            shopid,
+        ];
+        connection.query(sql, values, (err, results) => {
+            if (err) {
+                reject(err);
+            }
+            resolve(results);
+        });
+    });
+}
+
+function getOrderbyDate(username, date, callback){
+    _getShopIdbyUsername(username).then((shopid) => {
+        return _getOrderbyDate(shopid, date);
+    }).then((orders) => {
+        return _groupDate(orders);
+    }).then((group) => {
+        callback(undefined, group[0]);
+    }).catch((err) => {
+        return callback(err, undefined);
+    });
+}
+
 /* 已經用不到的
 function _patchShopMeals(meals, shop_id) {
     // 還沒更新店家訂單
@@ -650,4 +706,5 @@ module.exports = {
     newMeal,
     delMeal,
     getOrders,
+    getOrderbyDate,
 };
