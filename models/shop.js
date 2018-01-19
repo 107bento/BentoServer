@@ -473,140 +473,77 @@ function delMeal(mealid, callback) {
 
 }
 
-// _getMealsId(username) => 透過 shop 的 username 拿到所有 meal 的 id
-function _getMealsId(username) {
+// _getAllOrders() => 依照該店家取 order_id, order_time, detail_id, amount, final_meal
+function _getAllOrders(shopid) {
     return new Promise((resolve, reject) => {
         let sql, values;
-        sql = `
+        sql =`
             SELECT
-                meal_id
+                SUBSTRING(T1.order_time,1,10) ordertime,
+                T1.order_id,
+                T2.detail_id,
+                T2.amount,
+                T2.final_meal,
+                T3.meal_name
             FROM
-                meals
+                orders T1,
+                details T2,
+                meals T3
             WHERE
-                meals.shop_id = 
-                (
-                    SELECT
-                        shop_id
-                    FROM
-                        shops
-                    WHERE
-                        username = ?
-                );
+                T2.final_meal
+            IN (
+                SELECT
+                    meal_id
+                FROM
+                    meals
+                WHERE
+                    meals.shop_id = ?
+                )
+            AND
+                T2.order_id = T1.order_id
+            AND
+                T2.final_meal = T3.meal_id;
         `;
-        values = [username];
-        connection.query(sql, values, (error, results) => {
-            if (error) {
-                reject(error);
-            }
-            let meals = [];
-            for (let result of results) {
-                meals.push(result);
-            }
-            resolve(meals);
-        });
-    });
-}
-
-// _getAllOrders() => 取所有 order_id 和 order_time
-function _getAllOrders() {
-    let sql = `
-    SELECT 
-        SUBSTRING(order_time,1,13) time,
-        order_id 
-    FROM 
-        orders;
-    `;
-
-    return new Promise((resolve, reject) => {
-        connection.query(sql, (err, results) => {
-            if (err) {
-                reject(err);
-            }
-            let orders = [];
-            let i = 0;
-            for (let result of results) {
-                // 設定要儲存訂單內容
-                let order_id = result.order_id;
-                let time = result.time;
-                orders[i++] = {order_id, time};
-            }
-            resolve(orders);
-        });
-    });
-}
-
-// _groupDate (orders) => 把 orders 拆成
-// group : {
-//      "2018-01-09 ": {
-//          "1": [],
-//          "2": [],
-//          "3": [],
-//          "4": [],
-//          "5": [],
-//          "6": [],
-//          "7": [],
-//          "8": []
-//      },
-//      "2018-01-10 ": {
-//          "9": [],
-//          "10": [],
-//          "11": []
-//      },
-//      "定餐日期" ： {
-//          "order_id 1" : [ 所屬 detail id ],
-//          "order_id 2" : [ 所屬 detail id ],
-//      }
-// }
-// 但是 [ 所屬 detail id ] 還沒做好
-
-function _groupDate (orders) {
-    return new Promise((resolve,reject) => {
-        let group = {};
-        for (let order of orders) {
-            let date = order.time.substring(0,11);
-            let orderid = order.order_id;
-            if (group[date] == null) {
-                group[date] = {};
-                group[date][orderid] = [];
-            } else {
-                group[date][orderid] = [];
-            }
-        }
-        resolve(group);
-    });
-}
-
-// _getDetailsId(order_id) => 透過 order_id 拿到所屬 detail 的 id
-function _getDetailsId(order_id) {
-    return new Promise((resolve, reject) => {
-        let sql, values;
-        sql = `
-            SELECT
-                detail_id
-            FROM
-                details
-            WHERE
-                details.order_id = ? ;
-        `;
-        values = [
-            order_id,
-        ];
+        values = [shopid,];
         connection.query(sql, values, (err, results) => {
             if (err) {
                 reject(err);
             }
-            let details = [];
-            for (let result of results) {
-                details.push(result);
-            }
-            resolve(details);
+            resolve(results);
         });
     });
 }
 
+
+function _groupDate (orders) {
+        console.log(orders);
+        let group = {};
+        for (let order of orders) {
+            let date = order.ordertime;
+            if (group[date] == null) {
+                group[date] = {
+                    date
+                };
+            }
+            if (group[date][order.final_meal] == null){
+                group[date][order.final_meal]={
+                    "meal_id": order.final_meal,
+                    "mealname" : order.meal_name,
+                    "amount" : order.amount
+                };
+            } else {
+                group[date][order.final_meal].amount += order.amount;
+            }
+        }
+        return group;
+}
+
+
 function getOrders(username, callback) {
    
-    Promise.all([ _getAllOrders(), _getMealsId(username)]).then( ([orders, meals]) => {
+    _getShopIdbyUsername(username).then((shopid) => {
+        return _getAllOrders(shopid);
+    }).then((orders) => {
         return _groupDate(orders);
     }).then((group) => {
         callback(undefined, group);
