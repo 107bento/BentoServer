@@ -52,14 +52,14 @@ function showShops (callback) {
             meals.meal_id,
                 meal_name,
                 meal_price,
-                meal_discount 
-        FROM 
-            shops, meals 
-        WHERE 
-            shops.shop_id = meals.shop_id 
-        Group by 
+                meal_discount
+        FROM
+            shops, meals
+        WHERE
+            shops.shop_id = meals.shop_id
+        Group by
             meals.meal_id;
-        `;  
+        `;
     connection.query(sql, (err, results) => {
         let tmp = {};
         if (err) {
@@ -504,7 +504,7 @@ function _getAllOrders(shopid) {
             AND
                 T2.final_meal = T3.meal_id;
         `;
-        values = [shopid,];
+        values = [shopid];
         connection.query(sql, values, (err, results) => {
             if (err) {
                 reject(err);
@@ -514,33 +514,50 @@ function _getAllOrders(shopid) {
     });
 }
 
-
+// 按照 日期 分類
 function _groupDate (orders) {
-        console.log(orders);
-        let group = {};
-        for (let order of orders) {
-            let date = order.ordertime;
-            if (group[date] == null) {
-                group[date] = {
-                    date
-                };
-            }
-            if (group[date][order.final_meal] == null){
-                group[date][order.final_meal]={
-                    "meal_id": order.final_meal,
-                    "mealname" : order.meal_name,
-                    "amount" : order.amount
-                };
-            } else {
-                group[date][order.final_meal].amount += order.amount;
-            }
+    console.log(orders);
+    // 先創一個暫存的物件
+    let groups = {};
+    for (let order of orders) {
+        let date = order.ordertime;
+        // 若還沒有該日期，先新增
+        if (groups[date] == null) {
+            groups[date] = {
+                date,
+                tmp: {}
+            };
         }
-        return group;
+        // 若還沒有該餐點，先新增
+        if (groups[date].tmp[order.final_meal] == null){
+            groups[date].tmp[order.final_meal] = {
+                "meal_id": order.final_meal,
+                "meal_name" : order.meal_name,
+                "amount" : order.amount
+            };
+        // 累加該餐點
+        } else {
+            groups[date].tmp[order.final_meal].amount += order.amount;
+        }
+    }
+
+    // 整理起來成 array 傳回前端
+    let results = [];
+    for (let groupKey in groups) {
+        groups[groupKey].meals = [];
+        let tmp = groups[groupKey].tmp;
+        for (let mealId in tmp) {
+            groups[groupKey].meals.push(tmp[mealId]);
+        }
+        delete groups[groupKey].tmp;
+        results.push(groups[groupKey]);
+    }
+    return results;
 }
 
 
 function getOrders(username, callback) {
-   
+
     _getShopIdbyUsername(username).then((shopid) => {
         return _getAllOrders(shopid);
     }).then((orders) => {
@@ -551,7 +568,7 @@ function getOrders(username, callback) {
         return callback(err, undefined);
     });
 }
-/* 已經用不到的 
+/* 已經用不到的
 function _patchShopMeals(meals, shop_id) {
     // 還沒更新店家訂單
     // 要記得用 async for 參考 patch 訂單
