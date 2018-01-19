@@ -1,7 +1,7 @@
 const express = require('express');
 const shopsRouter = express.Router();
 const shop = require('./models/shop');
-const moment = require('moment'); 
+const moment = require('moment');
 
 // 取店家資料（所有相關（含菜單））
 /*shopsRouter.get('/', (req, res) => {
@@ -219,8 +219,9 @@ shopsRouter.delete('/:id/menu/:mealid', (req, res) => {
 
 });
 
-shopsRouter.get('/:id/orders', (req, res) => { 
-      
+// 拿某個店家的所有訂單
+shopsRouter.get('/:id/orders', (req, res) => {
+
     // 驗證登入
     let username = shop.checkLogin(req.cookies);
     if (!username) {
@@ -244,7 +245,7 @@ shopsRouter.get('/:id/orders', (req, res) => {
             });
         }
     });
-}); 
+});
 
 
 module.exports = shopsRouter;
